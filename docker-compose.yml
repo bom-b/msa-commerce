@@ -1,0 +1,161 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - msa-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+    networks:
+      - msa-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    networks:
+      - msa-network
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - msa-network
+
+  auth-service:
+    build: ./auth-service
+    image: ghcr.io/${GITHUB_REPOSITORY:-local}/auth-service:latest
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-msa-commerce-jwt-secret-key-must-be-at-least-256-bits-long}
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+    networks:
+      - msa-network
+
+  api-gateway:
+    build: ./api-gateway
+    image: ghcr.io/${GITHUB_REPOSITORY:-local}/api-gateway:latest
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-msa-commerce-jwt-secret-key-must-be-at-least-256-bits-long}
+      AUTH_SERVICE_HOST: auth-service
+      ORDER_SERVICE_HOST: order-service
+      PAYMENT_SERVICE_HOST: payment-service
+      STOCK_SERVICE_HOST: stock-service
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+    networks:
+      - msa-network
+
+  order-service:
+    build: ./order-service
+    image: ghcr.io/${GITHUB_REPOSITORY:-local}/order-service:latest
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: order_db
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SERVER_PORT: 8082
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - msa-network
+
+  payment-service:
+    build: ./payment-service
+    image: ghcr.io/${GITHUB_REPOSITORY:-local}/payment-service:latest
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: payment_db
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SERVER_PORT: 8083
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - msa-network
+
+  stock-service:
+    build: ./stock-service
+    image: ghcr.io/${GITHUB_REPOSITORY:-local}/stock-service:latest
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: stock_db
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SERVER_PORT: 8084
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - msa-network
+
+  frontend:
+    build: ./frontend
+    image: ghcr.io/${GITHUB_REPOSITORY:-local}/frontend:latest
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - msa-network
+
+volumes:
+  postgres_data:
+
+networks:
+  msa-network:
+    driver: bridge

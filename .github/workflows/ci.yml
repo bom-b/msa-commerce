@@ -1,0 +1,15 @@
+# Phase 7에서 구현 예정
+# PR 시 변경된 서비스만 빌드/테스트하는 CI 파이프라인
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: placeholder
+        run: echo "CI pipeline - Phase 7에서 구현 예정"

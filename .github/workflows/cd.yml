@@ -1,0 +1,15 @@
+# Phase 7에서 구현 예정
+# main 브랜치 push 시 Docker 이미지 빌드/푸시 및 배포
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: placeholder
+        run: echo "CD pipeline - Phase 7에서 구현 예정"
