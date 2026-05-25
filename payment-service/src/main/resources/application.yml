@@ -26,6 +26,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "com.msa.*"
+        spring.json.type.mapping: "orderCreatedEvent:com.msa.payment.dto.event.OrderCreatedEvent,stockInsufficientEvent:com.msa.payment.dto.event.StockInsufficientEvent"
 
 server:
   port: ${SERVER_PORT:8083}
