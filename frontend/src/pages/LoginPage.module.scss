@@ -1,0 +1,86 @@
+@use '../styles/variables' as v;
+@use '../styles/mixins' as m;
+
+.page {
+    @include m.flex-center;
+    min-height: 100vh;
+    background: #f7f7f7;
+    padding: v.$space-6;
+}
+
+.card {
+    @include m.card;
+    width: 100%;
+    max-width: 400px;
+    padding: v.$space-10 v.$space-8;
+}
+
+.title {
+    font-size: v.$font-size-2xl;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-primary;
+    margin-bottom: v.$space-2;
+    letter-spacing: -0.4px;
+}
+
+.subtitle {
+    font-size: v.$font-size-sm;
+    color: v.$color-text-secondary;
+    margin-bottom: v.$space-8;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-4;
+}
+
+.fieldGroup {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+}
+
+.label {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    color: v.$color-text;
+}
+
+.input {
+    @include m.input-base;
+}
+
+.error {
+    padding: v.$space-3 v.$space-4;
+    background: v.$color-error-bg;
+    border: 1px solid #e8a09a;
+    border-radius: v.$radius-sm;
+    font-size: v.$font-size-sm;
+    color: v.$color-error;
+}
+
+.submitBtn {
+    @include m.btn-primary;
+    width: 100%;
+    padding: v.$space-4;
+    margin-top: v.$space-2;
+    font-size: v.$font-size-md;
+}
+
+.hint {
+    margin-top: v.$space-6;
+    padding-top: v.$space-5;
+    border-top: 1px solid v.$color-border;
+    font-size: v.$font-size-sm;
+    color: v.$color-text-secondary;
+    text-align: center;
+
+    code {
+        font-family: monospace;
+        background: #f5f5f5;
+        padding: 1px 5px;
+        border-radius: 3px;
+        color: v.$color-text;
+    }
+}

@@ -1,0 +1,133 @@
+@use 'variables' as v;
+
+// 플렉스 정렬 헬퍼
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@mixin flex-start {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+// 텍스트 말줄임
+@mixin ellipsis {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+// 카드 스타일
+@mixin card {
+    background: v.$color-bg;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-md;
+}
+
+// 버튼 리셋
+@mixin button-reset {
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+// 인풋 기본 스타일
+@mixin input-base {
+    width: 100%;
+    padding: v.$space-3 v.$space-4;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-sm;
+    font-family: v.$font-family;
+    font-size: v.$font-size-base;
+    color: v.$color-text;
+    background: v.$color-bg;
+    outline: none;
+    transition: border-color v.$transition-fast;
+
+    &:focus {
+        border-color: v.$color-primary;
+    }
+
+    &::placeholder {
+        color: v.$color-text-secondary;
+    }
+}
+
+// 기본 버튼
+@mixin btn-primary {
+    @include button-reset;
+    @include flex-center;
+    padding: v.$space-3 v.$space-6;
+    background: v.$color-primary;
+    color: v.$color-bg;
+    border-radius: v.$radius-sm;
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-medium;
+    transition: opacity v.$transition-fast;
+
+    &:hover:not(:disabled) {
+        opacity: 0.8;
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+@mixin btn-secondary {
+    @include button-reset;
+    @include flex-center;
+    padding: v.$space-3 v.$space-6;
+    background: v.$color-bg;
+    color: v.$color-text;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-sm;
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-medium;
+    transition: background v.$transition-fast, border-color v.$transition-fast;
+
+    &:hover:not(:disabled) {
+        background: #f5f5f5;
+        border-color: #ccc;
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+// 페이지 레이아웃 공통
+@mixin page-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: v.$space-5 v.$page-padding-x;
+    background: v.$color-bg;
+    border-bottom: 1px solid v.$color-border;
+}
+
+// 반응형 브레이크포인트
+@mixin responsive-tablet {
+    @media (max-width: 768px) {
+        @content;
+    }
+}
+
+@mixin responsive-mobile {
+    @media (max-width: 480px) {
+        @content;
+    }
+}

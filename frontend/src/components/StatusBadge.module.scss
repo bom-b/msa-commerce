@@ -1,0 +1,36 @@
+@use '../styles/variables' as v;
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px v.$space-2;
+    border-radius: v.$radius-full;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-medium;
+    letter-spacing: 0.2px;
+}
+
+.pending {
+    background: v.$color-warning-bg;
+    color: v.$color-warning;
+}
+
+.completed {
+    background: v.$color-success-bg;
+    color: v.$color-success;
+}
+
+.cancelled {
+    background: #f5f5f5;
+    color: v.$color-text-secondary;
+}
+
+.failed {
+    background: v.$color-error-bg;
+    color: v.$color-error;
+}
+
+.refunded {
+    background: #f5f5f5;
+    color: v.$color-text-secondary;
+}

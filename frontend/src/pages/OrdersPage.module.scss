@@ -1,0 +1,122 @@
+@use '../styles/variables' as v;
+@use '../styles/mixins' as m;
+
+.page {
+    padding: v.$page-padding-y v.$page-padding-x;
+    max-width: v.$max-content-width;
+}
+
+.pageHeader {
+    margin-bottom: v.$space-8;
+}
+
+.pageTitle {
+    font-size: v.$font-size-2xl;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-primary;
+    letter-spacing: -0.4px;
+}
+
+.pageDescription {
+    margin-top: v.$space-2;
+    font-size: v.$font-size-sm;
+    color: v.$color-text-secondary;
+}
+
+.stateBox {
+    @include m.card;
+    padding: v.$space-12;
+    text-align: center;
+    color: v.$color-text-secondary;
+    font-size: v.$font-size-base;
+}
+
+.errorBox {
+    @extend .stateBox;
+    color: v.$color-error;
+    background: v.$color-error-bg;
+    border-color: #e8b4b0;
+}
+
+.emptyBox {
+    @extend .stateBox;
+
+    p {
+        margin-top: v.$space-2;
+        font-size: v.$font-size-sm;
+    }
+}
+
+// 주문 목록
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+}
+
+.card {
+    @include m.card;
+    padding: v.$space-5 v.$space-6;
+    cursor: pointer;
+    transition: box-shadow v.$transition-base, border-color v.$transition-base;
+
+    &:hover {
+        box-shadow: v.$shadow-md;
+        border-color: #ccc;
+    }
+}
+
+.cardTop {
+    @include m.flex-between;
+    margin-bottom: v.$space-4;
+}
+
+.orderId {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-text;
+}
+
+.cardMeta {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: v.$space-4;
+    margin-bottom: v.$space-3;
+
+    @include m.responsive-tablet {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.metaItem {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-1;
+}
+
+.metaLabel {
+    font-size: v.$font-size-xs;
+    color: v.$color-text-secondary;
+}
+
+.metaValue {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    color: v.$color-text;
+}
+
+.cardFooter {
+    @include m.flex-between;
+    padding-top: v.$space-3;
+    border-top: 1px solid v.$color-border;
+}
+
+.createdAt {
+    font-size: v.$font-size-xs;
+    color: v.$color-text-secondary;
+}
+
+.viewDetail {
+    font-size: v.$font-size-xs;
+    color: v.$color-text-secondary;
+}

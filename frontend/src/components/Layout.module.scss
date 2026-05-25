@@ -1,0 +1,196 @@
+@use '../styles/variables' as v;
+@use '../styles/mixins' as m;
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+// 헤더
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    height: v.$header-height;
+    @include m.flex-between;
+    padding: 0 v.$space-6;
+    background: v.$color-bg;
+    border-bottom: 1px solid v.$color-border;
+}
+
+.headerLeft {
+    @include m.flex-start;
+    gap: v.$space-3;
+}
+
+.logo {
+    @include m.button-reset;
+    font-size: v.$font-size-lg;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-primary;
+    letter-spacing: -0.3px;
+    cursor: pointer;
+
+    &:hover {
+        opacity: 0.75;
+    }
+}
+
+.headerRight {
+    @include m.flex-start;
+    gap: v.$space-2;
+    position: relative;
+}
+
+.loginBtn {
+    @include m.button-reset;
+    padding: v.$space-2 v.$space-4;
+    border: 1px solid v.$color-primary;
+    border-radius: v.$radius-sm;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: v.$color-primary;
+    transition: background v.$transition-fast, color v.$transition-fast;
+
+    &:hover {
+        background: v.$color-primary;
+        color: v.$color-bg;
+    }
+}
+
+.iconBtn {
+    @include m.button-reset;
+    @include m.flex-center;
+    width: 36px;
+    height: 36px;
+    border-radius: v.$radius-full;
+    color: v.$color-text;
+    transition: background v.$transition-fast;
+
+    &:hover {
+        background: v.$color-active-bg;
+    }
+}
+
+// 유저 드롭다운
+.userDropdown {
+    position: absolute;
+    top: calc(100% + v.$space-2);
+    right: 0;
+    min-width: 200px;
+    background: v.$color-bg;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-md;
+    box-shadow: v.$shadow-md;
+    overflow: hidden;
+    z-index: 200;
+}
+
+.userInfo {
+    padding: v.$space-4;
+    border-bottom: 1px solid v.$color-border;
+}
+
+.userLabel {
+    font-size: v.$font-size-xs;
+    color: v.$color-text-secondary;
+    margin-bottom: v.$space-1;
+}
+
+.userName {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-text;
+}
+
+.logoutBtn {
+    @include m.button-reset;
+    @include m.flex-start;
+    gap: v.$space-2;
+    width: 100%;
+    padding: v.$space-3 v.$space-4;
+    font-size: v.$font-size-base;
+    color: v.$color-error;
+    transition: background v.$transition-fast;
+
+    &:hover {
+        background: v.$color-error-bg;
+    }
+}
+
+// 본문 영역 (사이드바 + 메인)
+.body {
+    display: flex;
+    flex: 1;
+    padding-top: v.$header-height;
+}
+
+// 사이드바
+.sidebar {
+    position: fixed;
+    top: v.$header-height;
+    left: 0;
+    bottom: 0;
+    width: v.$sidebar-width;
+    background: v.$color-bg;
+    border-right: 1px solid v.$color-border;
+    padding: v.$space-4 0;
+    overflow-y: auto;
+}
+
+.navSection {
+    padding: v.$space-2 v.$space-4 v.$space-1;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.navItem {
+    @include m.button-reset;
+    @include m.flex-start;
+    gap: v.$space-3;
+    width: 100%;
+    padding: v.$space-3 v.$space-4;
+    font-size: v.$font-size-base;
+    color: v.$color-text-secondary;
+    border-radius: 0;
+    transition: background v.$transition-fast, color v.$transition-fast;
+
+    svg {
+        flex-shrink: 0;
+        opacity: 0.6;
+        transition: opacity v.$transition-fast;
+    }
+
+    &:hover {
+        background: v.$color-hover-bg;
+        color: v.$color-text;
+
+        svg {
+            opacity: 1;
+        }
+    }
+
+    &.active {
+        background: v.$color-active-bg;
+        color: v.$color-primary;
+        font-weight: v.$font-weight-medium;
+
+        svg {
+            opacity: 1;
+        }
+    }
+}
+
+// 메인 컨텐츠
+.main {
+    flex: 1;
+    margin-left: v.$sidebar-width;
+    min-height: calc(100vh - v.$header-height);
+    background: v.$color-page-bg;
+}

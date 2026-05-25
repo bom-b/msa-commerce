@@ -1,0 +1,180 @@
+@use '../styles/variables' as v;
+@use '../styles/mixins' as m;
+
+.page {
+    padding: v.$page-padding-y v.$page-padding-x;
+    max-width: v.$max-content-width;
+}
+
+.pageHeader {
+    margin-bottom: v.$space-8;
+}
+
+.pageTitle {
+    font-size: v.$font-size-2xl;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-primary;
+    letter-spacing: -0.4px;
+}
+
+.pageDescription {
+    margin-top: v.$space-2;
+    font-size: v.$font-size-sm;
+    color: v.$color-text-secondary;
+}
+
+// 로딩/에러 상태
+.stateBox {
+    @include m.card;
+    padding: v.$space-12;
+    text-align: center;
+    color: v.$color-text-secondary;
+    font-size: v.$font-size-base;
+}
+
+.errorBox {
+    @extend .stateBox;
+    color: v.$color-error;
+    background: v.$color-error-bg;
+    border-color: #e8b4b0;
+}
+
+// 상품 그리드
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: v.$space-5;
+}
+
+// 상품 카드
+.card {
+    @include m.card;
+    padding: v.$space-6;
+    transition: box-shadow v.$transition-base;
+
+    &:hover {
+        box-shadow: v.$shadow-md;
+    }
+}
+
+.cardHeader {
+    @include m.flex-between;
+    margin-bottom: v.$space-4;
+}
+
+.productName {
+    font-size: v.$font-size-lg;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-text;
+}
+
+.stockBadge {
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-medium;
+    padding: 2px v.$space-2;
+    border-radius: v.$radius-full;
+    background: #f0f0f0;
+    color: v.$color-text-secondary;
+}
+
+.stockBadgeLow {
+    @extend .stockBadge;
+    background: v.$color-warning-bg;
+    color: v.$color-warning;
+}
+
+.stockBadgeOut {
+    @extend .stockBadge;
+    background: v.$color-error-bg;
+    color: v.$color-error;
+}
+
+.stockInfo {
+    @include m.flex-start;
+    gap: v.$space-2;
+    margin-bottom: v.$space-5;
+}
+
+.stockLabel {
+    font-size: v.$font-size-sm;
+    color: v.$color-text-secondary;
+}
+
+.stockValue {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-text;
+}
+
+.divider {
+    height: 1px;
+    background: v.$color-border;
+    margin-bottom: v.$space-5;
+}
+
+.orderForm {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+}
+
+.orderLabel {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    color: v.$color-text;
+}
+
+.orderRow {
+    @include m.flex-start;
+    gap: v.$space-3;
+}
+
+.quantityInput {
+    width: 80px;
+    padding: v.$space-2 v.$space-3;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-sm;
+    font-family: v.$font-family;
+    font-size: v.$font-size-base;
+    color: v.$color-text;
+    text-align: center;
+    outline: none;
+    transition: border-color v.$transition-fast;
+
+    &:focus {
+        border-color: v.$color-primary;
+    }
+}
+
+.orderBtn {
+    @include m.btn-primary;
+    flex: 1;
+    padding: v.$space-2 v.$space-4;
+    font-size: v.$font-size-sm;
+}
+
+.successMsg {
+    margin-top: v.$space-2;
+    padding: v.$space-2 v.$space-3;
+    background: v.$color-success-bg;
+    border-radius: v.$radius-sm;
+    font-size: v.$font-size-sm;
+    color: v.$color-success;
+}
+
+.errorMsg {
+    margin-top: v.$space-2;
+    padding: v.$space-2 v.$space-3;
+    background: v.$color-error-bg;
+    border-radius: v.$radius-sm;
+    font-size: v.$font-size-sm;
+    color: v.$color-error;
+}
+
+.inlineTextBtn {
+    @include m.button-reset;
+    color: inherit;
+    text-decoration: underline;
+    font-size: inherit;
+    cursor: pointer;
+}

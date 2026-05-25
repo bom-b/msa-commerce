@@ -1,0 +1,58 @@
+@use 'variables' as v;
+
+@font-face {
+    font-family: 'Pretendard Variable';
+    src: url('../assets/font/PretendardVariable.woff2') format('woff2-variations');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: v.$font-family;
+    font-size: v.$font-size-base;
+    color: v.$color-text;
+    background: v.$color-page-bg;
+    line-height: 1.5;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    font-family: v.$font-family;
+}
+
+input,
+textarea,
+select {
+    font-family: v.$font-family;
+}
+
+ul,
+ol {
+    list-style: none;
+}
+
+// 앱 전체 레이아웃
+#root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
