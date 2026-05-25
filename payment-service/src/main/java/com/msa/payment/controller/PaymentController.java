@@ -1,5 +1,6 @@
 package com.msa.payment.controller;
 
+import com.msa.common.auth.annotation.Authenticated;
 import com.msa.payment.dto.PaymentResponse;
 import com.msa.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class PaymentController {
      * @param orderId 조회할 주문 ID
      * @return 200 OK + 결제 응답 DTO, 존재하지 않으면 404 Not Found
      */
+    @Authenticated
     @GetMapping("/{orderId}")
     public ResponseEntity<PaymentResponse> getPayment(@PathVariable Long orderId) {
         try {

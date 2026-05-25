@@ -1,5 +1,7 @@
 package com.msa.order.controller;
 
+import com.msa.common.auth.annotation.Authenticated;
+import com.msa.common.auth.annotation.CurrentUser;
 import com.msa.order.dto.CreateOrderRequest;
 import com.msa.order.dto.OrderResponse;
 import com.msa.order.service.OrderService;
@@ -30,12 +32,13 @@ public class OrderController {
     /**
      * 주문을 생성한다.
      *
-     * @param userId  API Gateway가 JWT에서 추출하여 설정한 인증된 사용자 ID
+     * @param userId  X-User-Id 헤더에서 추출한 인증된 사용자 ID
      * @param request 주문 생성 요청 DTO (productId, quantity, totalAmount)
      * @return 201 Created + 생성된 주문 응답 DTO
      */
+    @Authenticated
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@RequestHeader("X-User-Id") String userId,
+    public ResponseEntity<OrderResponse> createOrder(@CurrentUser Long userId,
                                                      @Valid @RequestBody CreateOrderRequest request) {
         log.info("주문 생성 요청 - userId: {}, productId: {}", userId, request.productId());
         OrderResponse response = orderService.createOrder(request, userId);
@@ -48,6 +51,7 @@ public class OrderController {
      * @param id 조회할 주문 ID
      * @return 200 OK + 주문 응답 DTO, 존재하지 않으면 404 Not Found
      */
+    @Authenticated
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {
         try {
@@ -59,13 +63,15 @@ public class OrderController {
     }
 
     /**
-     * 전체 주문 목록을 조회한다.
+     * 현재 로그인한 사용자의 주문 목록을 조회한다.
      *
-     * @return 200 OK + 전체 주문 응답 DTO 목록
+     * @param userId X-User-Id 헤더에서 추출한 인증된 사용자 ID
+     * @return 200 OK + 해당 사용자의 주문 응답 DTO 목록
      */
+    @Authenticated
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> getAllOrders() {
-        List<OrderResponse> responses = orderService.getAllOrders();
+    public ResponseEntity<List<OrderResponse>> getAllOrders(@CurrentUser Long userId) {
+        List<OrderResponse> responses = orderService.getAllOrdersByUserId(userId);
         return ResponseEntity.ok(responses);
     }
 }

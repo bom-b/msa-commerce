@@ -17,7 +17,7 @@ import java.util.UUID;
 public record OrderCreatedEvent(
     UUID eventId,
     Long orderId,
-    String userId,
+    Long userId,
     Long productId,
     int quantity,
     BigDecimal totalAmount) {

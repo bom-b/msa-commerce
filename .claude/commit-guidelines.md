@@ -41,15 +41,10 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 
 ```
 feat(order): 주문 생성 API 및 order.created 이벤트 발행 구현
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 ```
 
 ```
 fix(payment): order.created 컨슈머 중복 처리 방지 로직 추가
 
-eventId 기반 멱등성 체크가 누락되어 동일 이벤트 재처리 시
-결제가 중복 생성되는 문제를 수정함.
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+- eventId 기반 멱등성 체크가 누락되어 동일 이벤트 재처리 시 결제가 중복 생성되는 문제를 수정함.
 ```

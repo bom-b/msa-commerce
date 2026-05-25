@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
  */
 public record OrderResponse(
     Long id,
-    String userId,
+    Long userId,
     Long productId,
     int quantity,
     OrderStatus status,

@@ -10,36 +10,31 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 /**
- * JWT 인증을 처리하는 Gateway 글로벌 필터.
+ * JWT를 선택적으로 파싱하여 {@code X-User-Id} 헤더를 주입하는 Gateway 글로벌 필터.
+ *
+ * <p>JWT가 없거나 유효하지 않아도 요청을 차단하지 않는다. 인증 강제는 각 서비스의
+ * {@code AuthInterceptor}가 담당한다.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter implements GlobalFilter, Ordered {
 
-    /**
-     * 인증 검증을 건너뛸 경로 목록.
-     */
-    private static final List<String> AUTH_WHITELIST = List.of("/auth/");
-
+    /** JWT 설정 프로퍼티. */
     private final JwtProperties jwtProperties;
 
     /**
-     * 요청의 JWT를 검증하고, 유효한 경우 {@code X-User-Id} 헤더를 신뢰 가능한 값으로 교체하여
-     * 다운스트림으로 전달한다.
+     * 요청의 {@code X-User-Id} 헤더를 제거한 뒤, Authorization 헤더에 유효한 JWT가 있으면
+     * 파싱하여 subject를 {@code X-User-Id}로 재설정하고 다운스트림으로 전달한다.
      *
      * @param exchange 현재 서버 요청/응답 교환 객체
      * @param chain    다음 필터로 요청을 전달하는 필터 체인
@@ -47,42 +42,22 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
      */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String path = exchange.getRequest().getPath().toString();
-
-        // 화이트리스트 경로는 JWT 검증 없이 통과
-        if (isWhitelisted(path)) {
-            return chain.filter(exchange);
-        }
-
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return unauthorized(exchange.getResponse(), "Missing or invalid Authorization header");
+        // 클라이언트가 X-User-Id를 위조하지 못하도록 항상 제거
+        ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate()
+            .headers(h -> h.remove("X-User-Id"));
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            try {
+                Claims claims = parseToken(authHeader.substring(7));
+                requestBuilder.headers(h -> h.set("X-User-Id", claims.getSubject()));
+            } catch (Exception e) {
+                log.warn("JWT 파싱 실패 (요청은 계속 처리): {}", e.getMessage());
+            }
         }
 
-        try {
-            Claims claims = parseToken(authHeader.substring(7));
-
-            // 클라이언트가 X-User-Id 헤더를 임의로 설정하는 것을 방지하기 위해
-            // set()으로 기존 헤더를 완전히 제거한 뒤 JWT에서 추출한 신뢰 가능한 값으로 덮어씀
-            ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
-                .headers(h -> h.set("X-User-Id", claims.getSubject()))
-                .build();
-            return chain.filter(exchange.mutate().request(modifiedRequest).build());
-        } catch (Exception e) {
-            log.warn("JWT 검증 실패: {}", e.getMessage());
-            return unauthorized(exchange.getResponse(), "Invalid or expired token");
-        }
-    }
-
-    /**
-     * 요청 경로가 인증 화이트리스트에 포함되는지 확인한다.
-     *
-     * @param path 검사할 요청 경로
-     * @return 화이트리스트에 포함되면 {@code true}
-     */
-    private boolean isWhitelisted(String path) {
-        return AUTH_WHITELIST.stream().anyMatch(path::startsWith);
+        return chain.filter(exchange.mutate().request(requestBuilder.build()).build());
     }
 
     /**
@@ -100,20 +75,6 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             .build()
             .parseSignedClaims(token)
             .getPayload();
-    }
-
-    /**
-     * {@code 401 Unauthorized} 응답을 JSON 형식으로 작성한다.
-     *
-     * @param response 서버 HTTP 응답 객체
-     * @param message  클라이언트에 전달할 에러 메시지
-     * @return 응답 쓰기 완료를 나타내는 {@link Mono}
-     */
-    private Mono<Void> unauthorized(ServerHttpResponse response, String message) {
-        response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        byte[] body = ("{\"error\":\"" + message + "\"}").getBytes(StandardCharsets.UTF_8);
-        return response.writeWith(Mono.just(response.bufferFactory().wrap(body)));
     }
 
     /**

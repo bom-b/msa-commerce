@@ -29,7 +29,7 @@ public class Order {
      * 주문을 생성한 사용자 ID.
      */
     @Column(nullable = false)
-    private String userId;
+    private Long userId;
 
     /**
      * 주문한 상품 ID.
@@ -74,7 +74,7 @@ public class Order {
      */
     @Builder
     private Order(
-        String userId,
+        Long userId,
         Long productId,
         int quantity,
         OrderStatus status,

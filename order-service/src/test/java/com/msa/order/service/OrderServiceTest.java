@@ -57,12 +57,11 @@ class OrderServiceTest {
     @DisplayName("createOrder: 주문 생성 성공 시 저장 및 이벤트 발행 호출 검증")
     void createOrder_주문생성_성공() {
         // given
-        CreateOrderRequest request =
-            new CreateOrderRequest(1L, 2, new BigDecimal("20000.00"));
+        CreateOrderRequest request = new CreateOrderRequest(1L, 2, new BigDecimal("20000.00"));
 
         Order savedOrder =
             Order.builder()
-                .userId("test")
+                .userId(1L)
                 .productId(1L)
                 .quantity(2)
                 .status(OrderStatus.PENDING)
@@ -75,12 +74,12 @@ class OrderServiceTest {
         given(orderRepository.save(any(Order.class))).willReturn(savedOrder);
 
         // when
-        OrderResponse response = orderService.createOrder(request, "test");
+        OrderResponse response = orderService.createOrder(request, 1L);
 
         // then
         assertThat(response).isNotNull();
         assertThat(response.id()).isEqualTo(1L);
-        assertThat(response.userId()).isEqualTo("test");
+        assertThat(response.userId()).isEqualTo(1L);
         assertThat(response.status()).isEqualTo(OrderStatus.PENDING);
 
         then(orderRepository).should().save(any(Order.class));
@@ -111,7 +110,7 @@ class OrderServiceTest {
         // given
         Order order =
             Order.builder()
-                .userId("user1")
+                .userId(1L)
                 .productId(1L)
                 .quantity(2)
                 .status(OrderStatus.PENDING)
@@ -138,7 +137,7 @@ class OrderServiceTest {
         // given
         Order order =
             Order.builder()
-                .userId("user1")
+                .userId(1L)
                 .productId(1L)
                 .quantity(2)
                 .status(OrderStatus.PENDING)

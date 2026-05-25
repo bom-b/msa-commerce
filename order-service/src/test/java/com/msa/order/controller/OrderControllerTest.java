@@ -57,16 +57,19 @@ class OrderControllerTest {
             .withDatabaseName("order_db")
             .withUsername("postgres")
             .withPassword("postgres");
+
     /**
      * MockMvc HTTP 요청 수행 객체.
      */
     @Autowired
     private MockMvc mockMvc;
+
     /**
      * JSON 직렬화/역직렬화 ObjectMapper.
      */
     @Autowired
     private ObjectMapper objectMapper;
+
     /**
      * 테스트용 주문 레포지토리.
      */
@@ -112,25 +115,25 @@ class OrderControllerTest {
         mockMvc
             .perform(
                 post("/orders")
-                    .header("X-User-Id", "test")
+                    .header("X-User-Id", "1")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id", notNullValue()))
-            .andExpect(jsonPath("$.userId", is("test")))
+            .andExpect(jsonPath("$.userId", is(1)))
             .andExpect(jsonPath("$.productId", is(1)))
             .andExpect(jsonPath("$.quantity", is(2)))
             .andExpect(jsonPath("$.status", is("PENDING")));
     }
 
     /**
-     * POST /orders X-User-Id 헤더 누락 시 400 응답 테스트.
+     * POST /orders X-User-Id 헤더 누락 시 401 응답 테스트.
      *
      * @throws Exception MockMvc 요청 수행 시 발생할 수 있는 예외
      */
     @Test
-    @DisplayName("POST /orders: X-User-Id 헤더 누락 시 400 응답")
-    void POST_orders_XUserId헤더_누락_400() throws Exception {
+    @DisplayName("POST /orders: X-User-Id 헤더 누락 시 401 응답")
+    void POST_orders_XUserId헤더_누락_401() throws Exception {
         // given
         CreateOrderRequest request = new CreateOrderRequest(1L, 2, new BigDecimal("20000.00"));
 
@@ -140,7 +143,7 @@ class OrderControllerTest {
                 post("/orders")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isUnauthorized());
     }
 
     /**
@@ -155,7 +158,7 @@ class OrderControllerTest {
         Order saved =
             orderRepository.save(
                 Order.builder()
-                    .userId("user1")
+                    .userId(1L)
                     .productId(1L)
                     .quantity(2)
                     .status(OrderStatus.PENDING)
@@ -165,10 +168,10 @@ class OrderControllerTest {
 
         // when & then
         mockMvc
-            .perform(get("/orders/{id}", saved.getId()))
+            .perform(get("/orders/{id}", saved.getId()).header("X-User-Id", "1"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(saved.getId().intValue())))
-            .andExpect(jsonPath("$.userId", is("user1")))
+            .andExpect(jsonPath("$.userId", is(1)))
             .andExpect(jsonPath("$.status", is("PENDING")));
     }
 
@@ -181,6 +184,20 @@ class OrderControllerTest {
     @DisplayName("GET /orders/{id}: 존재하지 않는 주문 조회 시 404 응답")
     void GET_orders_id_존재하지않는주문_404() throws Exception {
         // when & then
-        mockMvc.perform(get("/orders/{id}", 999L)).andExpect(status().isNotFound());
+        mockMvc
+            .perform(get("/orders/{id}", 999L).header("X-User-Id", "1"))
+            .andExpect(status().isNotFound());
+    }
+
+    /**
+     * GET /orders X-User-Id 헤더 누락 시 401 응답 테스트.
+     *
+     * @throws Exception MockMvc 요청 수행 시 발생할 수 있는 예외
+     */
+    @Test
+    @DisplayName("GET /orders: X-User-Id 헤더 누락 시 401 응답")
+    void GET_orders_XUserId헤더_누락_401() throws Exception {
+        // when & then
+        mockMvc.perform(get("/orders")).andExpect(status().isUnauthorized());
     }
 }

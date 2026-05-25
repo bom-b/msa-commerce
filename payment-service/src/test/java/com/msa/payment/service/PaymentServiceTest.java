@@ -60,7 +60,7 @@ class PaymentServiceTest {
     void processPayment_결제생성_및_이벤트발행() {
         // given
         OrderCreatedEvent event = new OrderCreatedEvent(
-            UUID.randomUUID(), 1L, "user1", 10L, 2, new BigDecimal("20000.00"));
+            UUID.randomUUID(), 1L, 1L, 10L, 2, new BigDecimal("20000.00"));
 
         Payment savedPayment = Payment.builder()
             .orderId(1L)
@@ -95,7 +95,7 @@ class PaymentServiceTest {
     void processPayment_중복이벤트_DataIntegrityViolationException_전파() {
         // given
         OrderCreatedEvent event = new OrderCreatedEvent(
-            UUID.randomUUID(), 1L, "user1", 10L, 2, new BigDecimal("20000.00"));
+            UUID.randomUUID(), 1L, 1L, 10L, 2, new BigDecimal("20000.00"));
 
         given(paymentRepository.saveAndFlush(any(Payment.class))).willThrow(DataIntegrityViolationException.class);
 

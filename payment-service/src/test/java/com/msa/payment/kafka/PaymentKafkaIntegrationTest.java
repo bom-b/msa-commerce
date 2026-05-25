@@ -84,7 +84,7 @@ class PaymentKafkaIntegrationTest {
         // given
         Long orderId = 42L;
         OrderCreatedEvent event = new OrderCreatedEvent(
-            UUID.randomUUID(), orderId, "user1", 10L, 2, new BigDecimal("30000.00"));
+            UUID.randomUUID(), orderId, 1L, 10L, 2, new BigDecimal("30000.00"));
 
         // when
         kafkaTemplate.send("order.created", String.valueOf(orderId), event);
@@ -108,7 +108,7 @@ class PaymentKafkaIntegrationTest {
         // given
         Long orderId = 99L;
         OrderCreatedEvent event = new OrderCreatedEvent(
-            UUID.randomUUID(), orderId, "user1", 10L, 1, new BigDecimal("10000.00"));
+            UUID.randomUUID(), orderId, 1L, 10L, 1, new BigDecimal("10000.00"));
 
         // when — 동일 이벤트를 두 번 발행
         kafkaTemplate.send("order.created", String.valueOf(orderId), event);
@@ -132,7 +132,7 @@ class PaymentKafkaIntegrationTest {
         // given — 먼저 결제 레코드가 존재해야 함
         Long orderId = 77L;
         OrderCreatedEvent orderEvent = new OrderCreatedEvent(
-            UUID.randomUUID(), orderId, "user1", 10L, 5, new BigDecimal("50000.00"));
+            UUID.randomUUID(), orderId, 1L, 10L, 5, new BigDecimal("50000.00"));
         kafkaTemplate.send("order.created", String.valueOf(orderId), orderEvent);
 
         // 결제 생성 완료 대기

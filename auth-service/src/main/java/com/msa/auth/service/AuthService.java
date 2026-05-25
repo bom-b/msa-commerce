@@ -35,21 +35,23 @@ public class AuthService {
         if (!"test".equals(request.id()) || !"test".equals(request.password())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
-        return new LoginResponse(generateToken(request.id()));
+
+        Long userIdx = 1L; // test 사용자의 idx
+        return new LoginResponse(generateToken(userIdx));
     }
 
     /**
-     * 사용자 ID를 subject로 하는 서명된 JWT를 생성한다.
+     * test 사용자의 숫자 ID("1")를 subject로 하는 서명된 JWT를 생성한다.
      *
-     * @param userId JWT의 subject로 설정할 사용자 ID
+     * @param userIdx JWT의 subject로 설정할 사용자 idx
      * @return HS256으로 서명된 JWT 문자열
      */
-    private String generateToken(String userId) {
+    private String generateToken(Long userIdx) {
         SecretKey key = Keys.hmacShaKeyFor(
             jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
         Date now = new Date();
         return Jwts.builder()
-            .subject(userId)
+            .subject(userIdx.toString())
             .issuedAt(now)
             .expiration(new Date(now.getTime() + jwtProperties.getExpirationMs()))
             .signWith(key)

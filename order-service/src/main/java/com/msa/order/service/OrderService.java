@@ -43,7 +43,7 @@ public class OrderService {
      * @return 생성된 주문의 응답 DTO
      */
     @Transactional
-    public OrderResponse createOrder(CreateOrderRequest request, String userId) {
+    public OrderResponse createOrder(CreateOrderRequest request, Long userId) {
         Order order =
             Order.builder()
                 .userId(userId)
@@ -89,13 +89,14 @@ public class OrderService {
     }
 
     /**
-     * 전체 주문 목록을 조회한다.
+     * 특정 사용자의 주문 목록을 조회한다.
      *
-     * @return 전체 주문 응답 DTO 목록
+     * @param userId 조회할 사용자 ID
+     * @return 해당 사용자의 주문 응답 DTO 목록
      */
     @Transactional(readOnly = true)
-    public List<OrderResponse> getAllOrders() {
-        return orderRepository.findAll().stream().map(OrderResponse::from).toList();
+    public List<OrderResponse> getAllOrdersByUserId(Long userId) {
+        return orderRepository.findAllByUserId(userId).stream().map(OrderResponse::from).toList();
     }
 
     /**
