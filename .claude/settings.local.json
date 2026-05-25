@@ -1,11 +1,11 @@
 {
-  "permissions": {
-    "allow": [
-      "PowerShell(Get-ChildItem -Recurse C:\\\\workspace\\\\msa-commerce | Where-Object { !$_.PSIsContainer } | Select-Object FullName | Sort-Object FullName)",
-      "PowerShell(Get-ChildItem -Recurse C:\\\\workspace\\\\msa-commerce\\\\auth-service, C:\\\\workspace\\\\msa-commerce\\\\api-gateway | Where-Object { !$_.PSIsContainer } | Select-Object -ExpandProperty FullName | Sort-Object)",
-      "Bash(Get-ChildItem -Path \"C:\\\\workspace\\\\msa-commerce\" -Recurse -Directory)",
-      "Bash(Select-Object FullName)",
-      "Bash(Head -30)"
-    ]
-  }
+    "permissions": {
+        "allow": [
+            "PowerShell(Get-ChildItem -Recurse C:\\\\workspace\\\\msa-commerce | Where-Object { !$_.PSIsContainer } | Select-Object FullName | Sort-Object FullName)",
+            "PowerShell(Get-ChildItem -Recurse C:\\\\workspace\\\\msa-commerce\\\\auth-service, C:\\\\workspace\\\\msa-commerce\\\\api-gateway | Where-Object { !$_.PSIsContainer } | Select-Object -ExpandProperty FullName | Sort-Object)",
+            "Bash(Get-ChildItem -Path \"C:\\\\workspace\\\\msa-commerce\" -Recurse -Directory)",
+            "Bash(Select-Object FullName)",
+            "Bash(Head -30)"
+        ]
+    }
 }
