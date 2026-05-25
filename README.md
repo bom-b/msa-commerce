@@ -6,18 +6,18 @@ MSA 아키텍처와 Apache Kafka 이벤트 드리븐 패턴을 학습하기 위�
 
 ## 기술 스택
 
-| 구분 | 기술 |
-|------|------|
-| 백엔드 | Spring Boot 3.x, Java 21, Gradle (Kotlin DSL) |
-| API Gateway | Spring Cloud Gateway 4.x |
-| 인증 | JWT (jjwt), HS256 |
-| ORM | Spring Data JPA, Hibernate |
-| DB | PostgreSQL 15 |
-| 메시지 브로커 | Apache Kafka 3.x |
-| 프론트엔드 | React 18, Axios |
-| 인프라 | Docker, Docker Compose |
-| CI/CD | GitHub Actions, GHCR |
-| 테스트 | JUnit 5, Mockito, Testcontainers |
+| 구분          | 기술                                            |
+|-------------|-----------------------------------------------|
+| 백엔드         | Spring Boot 3.x, Java 21, Gradle (Kotlin DSL) |
+| API Gateway | Spring Cloud Gateway 4.x                      |
+| 인증          | JWT (jjwt), HS256                             |
+| ORM         | Spring Data JPA, Hibernate                    |
+| DB          | PostgreSQL 15                                 |
+| 메시지 브로커     | Apache Kafka 3.x                              |
+| 프론트엔드       | React 18, Axios                               |
+| 인프라         | Docker, Docker Compose                        |
+| CI/CD       | GitHub Actions, GHCR                          |
+| 테스트         | JUnit 5, Mockito, Testcontainers              |
 
 ---
 

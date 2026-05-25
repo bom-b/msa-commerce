@@ -6,12 +6,14 @@ import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
@@ -20,23 +22,19 @@ import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * {@link JwtAuthFilter} 단위 테스트.
- *
- * <p>{@link MockServerWebExchange}를 사용해 WebFlux 환경에서의
- * JWT 검증 필터 동작을 Spring 컨텍스트 없이 격리하여 테스트한다.</p>
  */
 @ExtendWith(MockitoExtension.class)
 class JwtAuthFilterTest {
 
-    /** 테스트용 256비트 이상의 HMAC 비밀키. */
+    /**
+     * 테스트용 256비트 이상의 HMAC 비밀키.
+     */
     private static final String TEST_SECRET =
-            "test-secret-key-must-be-at-least-256-bits-long-for-hmac-sha256";
+        "test-secret-key-must-be-at-least-256-bits-long-for-hmac-sha256";
 
     private JwtAuthFilter filter;
 
@@ -56,7 +54,7 @@ class JwtAuthFilterTest {
     @Test
     void filter_whitelistedPath_skipsAuthentication() {
         MockServerWebExchange exchange = exchangeFor(
-                MockServerHttpRequest.post("/auth/login").build());
+            MockServerHttpRequest.post("/auth/login").build());
         GatewayFilterChain chain = chainReturningEmpty();
 
         filter.filter(exchange, chain).block();
@@ -65,20 +63,47 @@ class JwtAuthFilterTest {
     }
 
     /**
-     * 유효한 JWT가 포함된 요청은 다음 필터로 전달되어야 한다.
+     * 유효한 JWT가 포함된 요청은 다음 필터로 전달되며,
+     * 다운스트림 요청의 {@code X-User-Id} 헤더에 JWT subject 값이 설정되어야 한다.
      */
     @Test
     void filter_withValidToken_forwardsRequestWithUserId() {
         String token = createToken("test");
         MockServerWebExchange exchange = exchangeFor(
-                MockServerHttpRequest.get("/orders/1")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .build());
+            MockServerHttpRequest.get("/orders/1")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .build());
         GatewayFilterChain chain = chainReturningEmpty();
+        ArgumentCaptor<ServerWebExchange> captor = ArgumentCaptor.forClass(ServerWebExchange.class);
 
         filter.filter(exchange, chain).block();
 
-        verify(chain).filter(any());
+        verify(chain).filter(captor.capture());
+        String userId = captor.getValue().getRequest().getHeaders().getFirst("X-User-Id");
+        assertThat(userId).isEqualTo("test");
+    }
+
+    /**
+     * 클라이언트가 {@code X-User-Id} 헤더를 직접 위조하여 전송한 경우,
+     * 다운스트림 요청에서 해당 값이 JWT subject 값으로 교체되어야 한다.
+     */
+    @Test
+    void filter_withForgedUserIdHeader_replacesWithJwtSubject() {
+        String token = createToken("test");
+        MockServerWebExchange exchange = exchangeFor(
+            MockServerHttpRequest.get("/orders/1")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .header("X-User-Id", "attacker")  // 클라이언트가 위조한 헤더
+                .build());
+        GatewayFilterChain chain = chainReturningEmpty();
+        ArgumentCaptor<ServerWebExchange> captor = ArgumentCaptor.forClass(ServerWebExchange.class);
+
+        filter.filter(exchange, chain).block();
+
+        verify(chain).filter(captor.capture());
+        String userId = captor.getValue().getRequest().getHeaders().getFirst("X-User-Id");
+        assertThat(userId).isEqualTo("test");       // JWT subject 값으로 교체됨
+        assertThat(userId).isNotEqualTo("attacker"); // 위조된 값이 그대로 전달되지 않음
     }
 
     /**
@@ -87,7 +112,7 @@ class JwtAuthFilterTest {
     @Test
     void filter_withMissingAuthHeader_returnsUnauthorized() {
         MockServerWebExchange exchange = exchangeFor(
-                MockServerHttpRequest.get("/orders/1").build());
+            MockServerHttpRequest.get("/orders/1").build());
         GatewayFilterChain chain = mock(GatewayFilterChain.class);
 
         filter.filter(exchange, chain).block();
@@ -102,9 +127,9 @@ class JwtAuthFilterTest {
     @Test
     void filter_withInvalidToken_returnsUnauthorized() {
         MockServerWebExchange exchange = exchangeFor(
-                MockServerHttpRequest.get("/orders/1")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer invalid-token")
-                        .build());
+            MockServerHttpRequest.get("/orders/1")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer invalid-token")
+                .build());
         GatewayFilterChain chain = mock(GatewayFilterChain.class);
 
         filter.filter(exchange, chain).block();
@@ -119,9 +144,9 @@ class JwtAuthFilterTest {
     @Test
     void filter_withMalformedAuthHeader_returnsUnauthorized() {
         MockServerWebExchange exchange = exchangeFor(
-                MockServerHttpRequest.get("/orders/1")
-                        .header(HttpHeaders.AUTHORIZATION, "token-without-bearer-prefix")
-                        .build());
+            MockServerHttpRequest.get("/orders/1")
+                .header(HttpHeaders.AUTHORIZATION, "token-without-bearer-prefix")
+                .build());
         GatewayFilterChain chain = mock(GatewayFilterChain.class);
 
         filter.filter(exchange, chain).block();
@@ -139,11 +164,11 @@ class JwtAuthFilterTest {
     private String createToken(String userId) {
         SecretKey key = Keys.hmacShaKeyFor(TEST_SECRET.getBytes(StandardCharsets.UTF_8));
         return Jwts.builder()
-                .subject(userId)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 3_600_000))
-                .signWith(key)
-                .compact();
+            .subject(userId)
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + 3_600_000))
+            .signWith(key)
+            .compact();
     }
 
     /**

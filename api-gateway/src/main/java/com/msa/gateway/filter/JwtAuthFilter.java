@@ -24,26 +24,22 @@ import java.util.List;
 
 /**
  * JWT 인증을 처리하는 Gateway 글로벌 필터.
- *
- * <p>모든 인바운드 요청에 대해 JWT 유효성을 검증한다.
- * 화이트리스트 경로({@code /auth/**})는 인증 없이 통과시키며,
- * 유효한 토큰인 경우 {@code X-User-Id} 헤더를 추가하여 다운스트림 서비스가
- * 인증된 사용자 ID를 신뢰할 수 있도록 전달한다.</p>
- *
- * <p>필터 순서는 {@code -1}로, 다른 Spring 기본 필터보다 먼저 실행된다.</p>
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter implements GlobalFilter, Ordered {
 
-    /** 인증 검증을 건너뛸 경로 목록. */
+    /**
+     * 인증 검증을 건너뛸 경로 목록.
+     */
     private static final List<String> AUTH_WHITELIST = List.of("/auth/");
 
     private final JwtProperties jwtProperties;
 
     /**
-     * 요청의 JWT를 검증하고, 유효한 경우 사용자 ID를 헤더에 추가하여 다운스트림으로 전달한다.
+     * 요청의 JWT를 검증하고, 유효한 경우 {@code X-User-Id} 헤더를 신뢰 가능한 값으로 교체하여
+     * 다운스트림으로 전달한다.
      *
      * @param exchange 현재 서버 요청/응답 교환 객체
      * @param chain    다음 필터로 요청을 전달하는 필터 체인
@@ -67,11 +63,11 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         try {
             Claims claims = parseToken(authHeader.substring(7));
 
-            // 다운스트림 서비스에서 인증된 사용자 ID를 신뢰할 수 있도록 헤더로 전달
-            // Gateway가 JWT를 검증한 후 설정하므로 다운스트림에서는 별도 검증이 불필요하다
+            // 클라이언트가 X-User-Id 헤더를 임의로 설정하는 것을 방지하기 위해
+            // set()으로 기존 헤더를 완전히 제거한 뒤 JWT에서 추출한 신뢰 가능한 값으로 덮어씀
             ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
-                    .header("X-User-Id", claims.getSubject())
-                    .build();
+                .headers(h -> h.set("X-User-Id", claims.getSubject()))
+                .build();
             return chain.filter(exchange.mutate().request(modifiedRequest).build());
         } catch (Exception e) {
             log.warn("JWT 검증 실패: {}", e.getMessage());
@@ -98,12 +94,12 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
      */
     private Claims parseToken(String token) {
         SecretKey key = Keys.hmacShaKeyFor(
-                jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+            jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
         return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
     }
 
     /**
@@ -123,9 +119,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     /**
      * 이 필터의 실행 순서를 반환한다.
      *
-     * <p>{@code -1}로 설정하여 Spring Cloud Gateway의 기본 필터보다 먼저 실행된다.</p>
-     *
-     * @return 필터 실행 순서 값
+     * @return -1 (Spring Cloud Gateway 기본 필터보다 먼저 실행)
      */
     @Override
     public int getOrder() {

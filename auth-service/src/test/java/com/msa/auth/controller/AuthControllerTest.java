@@ -19,9 +19,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * {@link AuthController} HTTP 계층 슬라이스 테스트.
- *
- * <p>{@code @WebMvcTest}를 사용해 서블릿 컨텍스트만 로드하고,
- * {@link AuthService}는 Mockito로 대체하여 컨트롤러 동작만 검증한다.</p>
  */
 @WebMvcTest(AuthController.class)
 class AuthControllerTest {
@@ -40,10 +37,10 @@ class AuthControllerTest {
         when(authService.login(any())).thenReturn(new LoginResponse("mocked-jwt-token"));
 
         mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"id\":\"test\",\"password\":\"test\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("mocked-jwt-token"));
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"id\":\"test\",\"password\":\"test\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.token").value("mocked-jwt-token"));
     }
 
     /**
@@ -52,11 +49,11 @@ class AuthControllerTest {
     @Test
     void login_withInvalidCredentials_returns401() throws Exception {
         when(authService.login(any()))
-                .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
+            .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
 
         mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"id\":\"wrong\",\"password\":\"wrong\"}"))
-                .andExpect(status().isUnauthorized());
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"id\":\"wrong\",\"password\":\"wrong\"}"))
+            .andExpect(status().isUnauthorized());
     }
 }

@@ -15,10 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 /**
- * 인증 비즈니스 로직을 담당하는 서비스.
- *
- * <p>사용자 자격증명을 검증하고 JWT를 발급한다.
- * 현재는 학습 목적으로 {@code test/test} 계정만 허용한다.</p>
+ * 인증 비즈니스 로직을 담당하는 서비스. 사용자 자격증명을 검증하고 JWT를 발급한다.
+ * 학습 목적으로 {@code test/test} 계정만 허용한다.
  */
 @Service
 @RequiredArgsConstructor
@@ -48,13 +46,13 @@ public class AuthService {
      */
     private String generateToken(String userId) {
         SecretKey key = Keys.hmacShaKeyFor(
-                jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+            jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
         Date now = new Date();
         return Jwts.builder()
-                .subject(userId)
-                .issuedAt(now)
-                .expiration(new Date(now.getTime() + jwtProperties.getExpirationMs()))
-                .signWith(key)
-                .compact();
+            .subject(userId)
+            .issuedAt(now)
+            .expiration(new Date(now.getTime() + jwtProperties.getExpirationMs()))
+            .signWith(key)
+            .compact();
     }
 }

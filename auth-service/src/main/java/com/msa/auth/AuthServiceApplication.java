@@ -6,10 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 /**
- * 인증 서비스 애플리케이션 진입점.
- *
- * <p>JWT 토큰 발급 기능을 제공하는 마이크로서비스.
- * 학습 목적으로 {@code id=test / pw=test} 계정에 한해 JWT를 발급한다.</p>
+ * 인증 서비스 애플리케이션 진입점. JWT 토큰 발급 기능을 제공하는 마이크로서비스.
+ * 학습 목적으로 {@code id=test / pw=test} 계정에 한해 JWT를 발급한다.
  */
 @SpringBootApplication
 @EnableConfigurationProperties(JwtProperties.class)

@@ -6,11 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 /**
- * API Gateway 애플리케이션 진입점.
- *
- * <p>Spring Cloud Gateway 기반의 단일 진입점(Single Entry Point)으로,
- * JWT 인증 필터와 라우팅 설정을 통해 각 마이크로서비스로 요청을 위임한다.
- * WebFlux(Reactive) 기반으로 동작한다.</p>
+ * Spring Cloud Gateway + WebFlux 기반 단일 진입점. JWT 인증 필터와 라우팅으로 각 마이크로서비스로 요청을 위임한다.
  */
 @SpringBootApplication
 @EnableConfigurationProperties(JwtProperties.class)

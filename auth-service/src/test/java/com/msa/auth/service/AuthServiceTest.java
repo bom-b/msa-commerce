@@ -13,14 +13,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * {@link AuthService} 단위 테스트.
- *
- * <p>Spring 컨텍스트 없이 JWT 발급 및 인증 검증 로직만 격리하여 테스트한다.</p>
  */
 class AuthServiceTest {
 
-    /** 테스트용 256비트 이상의 HMAC 비밀키. */
+    /**
+     * 테스트용 256비트 이상의 HMAC 비밀키.
+     */
     private static final String TEST_SECRET =
-            "test-secret-key-must-be-at-least-256-bits-long-for-hmac-sha256";
+        "test-secret-key-must-be-at-least-256-bits-long-for-hmac-sha256";
 
     private AuthService authService;
 
@@ -55,10 +55,10 @@ class AuthServiceTest {
         LoginRequest request = loginRequest("wrong", "test");
 
         assertThatThrownBy(() -> authService.login(request))
-                .isInstanceOf(ResponseStatusException.class)
-                .satisfies(ex ->
-                    assertThat(((ResponseStatusException) ex).getStatusCode())
-                        .isEqualTo(HttpStatus.UNAUTHORIZED));
+            .isInstanceOf(ResponseStatusException.class)
+            .satisfies(ex ->
+                assertThat(((ResponseStatusException) ex).getStatusCode())
+                    .isEqualTo(HttpStatus.UNAUTHORIZED));
     }
 
     /**
@@ -69,10 +69,10 @@ class AuthServiceTest {
         LoginRequest request = loginRequest("test", "wrong");
 
         assertThatThrownBy(() -> authService.login(request))
-                .isInstanceOf(ResponseStatusException.class)
-                .satisfies(ex ->
-                    assertThat(((ResponseStatusException) ex).getStatusCode())
-                        .isEqualTo(HttpStatus.UNAUTHORIZED));
+            .isInstanceOf(ResponseStatusException.class)
+            .satisfies(ex ->
+                assertThat(((ResponseStatusException) ex).getStatusCode())
+                    .isEqualTo(HttpStatus.UNAUTHORIZED));
     }
 
     /**
