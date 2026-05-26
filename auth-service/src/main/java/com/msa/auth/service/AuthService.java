@@ -1,49 +1,77 @@
 package com.msa.auth.service;
 
 import com.msa.auth.config.JwtProperties;
+import com.msa.auth.domain.User;
+import com.msa.auth.domain.UserBalance;
+import com.msa.auth.dto.BalanceResponse;
 import com.msa.auth.dto.LoginRequest;
 import com.msa.auth.dto.LoginResponse;
+import com.msa.auth.repository.UserBalanceRepository;
+import com.msa.auth.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.NoSuchElementException;
 
 /**
- * 인증 비즈니스 로직을 담당하는 서비스. 사용자 자격증명을 검증하고 JWT를 발급한다.
- * 학습 목적으로 {@code test/test} 계정만 허용한다.
+ * 인증 비즈니스 로직을 담당하는 서비스. DB에서 사용자 자격증명을 검증하고 JWT를 발급한다.
  */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
+    /** JWT 설정 프로퍼티. */
     private final JwtProperties jwtProperties;
 
+    /** 사용자 데이터 접근 객체. */
+    private final UserRepository userRepository;
+
+    /** 사용자 예치금 데이터 접근 객체. */
+    private final UserBalanceRepository userBalanceRepository;
+
     /**
-     * 로그인 요청을 검증하고 JWT를 발급한다.
+     * 로그인 요청을 DB에서 검증하고 JWT를 발급한다.
      *
      * @param request 로그인 요청 (id, password)
      * @return 발급된 JWT를 담은 응답 DTO
-     * @throws ResponseStatusException id 또는 password가 올바르지 않을 경우 {@code 401 UNAUTHORIZED}
+     * @throws ResponseStatusException 사용자가 존재하지 않거나 비밀번호가 일치하지 않을 경우 {@code 401 UNAUTHORIZED}
      */
+    @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        if (!"test".equals(request.id()) || !"test".equals(request.password())) {
+        User user = userRepository.findByUsername(request.username())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
+        if (!user.getPassword().equals(request.password())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
-
-        Long userIdx = 1L; // test 사용자의 idx
-        return new LoginResponse(generateToken(userIdx));
+        return new LoginResponse(generateToken(user.getId()));
     }
 
     /**
-     * test 사용자의 숫자 ID("1")를 subject로 하는 서명된 JWT를 생성한다.
+     * 사용자 ID로 예치금 정보를 조회한다.
      *
-     * @param userIdx JWT의 subject로 설정할 사용자 idx
+     * @param userId 조회할 사용자 ID
+     * @return 사용자 ID와 잔액을 담은 응답 DTO
+     * @throws NoSuchElementException 해당 사용자의 예치금 정보가 존재하지 않는 경우
+     */
+    @Transactional(readOnly = true)
+    public BalanceResponse getBalance(Long userId) {
+        UserBalance balance = userBalanceRepository.findByUser_Id(userId)
+            .orElseThrow(() -> new NoSuchElementException("예치금 정보를 찾을 수 없습니다. userId=" + userId));
+        return new BalanceResponse(userId, balance.getBalance());
+    }
+
+    /**
+     * 사용자 ID를 subject로 하는 서명된 JWT를 생성한다.
+     *
+     * @param userIdx JWT의 subject로 설정할 사용자 ID
      * @return HS256으로 서명된 JWT 문자열
      */
     private String generateToken(Long userIdx) {

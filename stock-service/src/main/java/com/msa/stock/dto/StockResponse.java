@@ -2,6 +2,8 @@ package com.msa.stock.dto;
 
 import com.msa.stock.domain.Stock;
 
+import java.math.BigDecimal;
+
 /**
  * 재고 조회 응답 DTO.
  *
@@ -10,13 +12,15 @@ import com.msa.stock.domain.Stock;
  * @param productName 상품명
  * @param quantity    현재 재고 수량
  * @param imageName   상품 이미지 파일명
+ * @param price       상품 가격 (원화)
  */
 public record StockResponse(
         Long id,
         Long productId,
         String productName,
         int quantity,
-        String imageName
+        String imageName,
+        BigDecimal price
 ) {
 
     /**
@@ -31,7 +35,8 @@ public record StockResponse(
                 stock.getProductId(),
                 stock.getProductName(),
                 stock.getQuantity(),
-                stock.getImageName()
+                stock.getImageName(),
+                stock.getPrice()
         );
     }
 }

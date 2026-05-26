@@ -1,5 +1,6 @@
 package com.msa.auth.controller;
 
+import com.msa.auth.dto.BalanceResponse;
 import com.msa.auth.dto.LoginResponse;
 import com.msa.auth.service.AuthService;
 import org.junit.jupiter.api.Test;
@@ -11,8 +12,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+import java.util.NoSuchElementException;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,9 +29,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AuthController.class)
 class AuthControllerTest {
 
+    /** MockMvc HTTP 요청 수행 객체. */
     @Autowired
     private MockMvc mockMvc;
 
+    /** AuthService Mock 객체. */
     @MockBean
     private AuthService authService;
 
@@ -55,5 +63,31 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"id\":\"wrong\",\"password\":\"wrong\"}"))
             .andExpect(status().isUnauthorized());
+    }
+
+    /**
+     * 유효한 X-User-Id 헤더로 예치금 조회 시 {@code 200 OK}와 잔액이 반환되어야 한다.
+     */
+    @Test
+    void getBalance_withValidUserId_returns200WithBalance() throws Exception {
+        when(authService.getBalance(eq(1L))).thenReturn(new BalanceResponse(1L, BigDecimal.valueOf(50000)));
+
+        mockMvc.perform(get("/auth/balance")
+                .header("X-User-Id", "1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.userId").value(1))
+            .andExpect(jsonPath("$.balance").value(50000));
+    }
+
+    /**
+     * 존재하지 않는 사용자 ID로 예치금 조회 시 {@code 404 NOT FOUND}가 반환되어야 한다.
+     */
+    @Test
+    void getBalance_withUnknownUserId_returns404() throws Exception {
+        when(authService.getBalance(eq(999L))).thenThrow(new NoSuchElementException("예치금 정보를 찾을 수 없습니다."));
+
+        mockMvc.perform(get("/auth/balance")
+                .header("X-User-Id", "999"))
+            .andExpect(status().isNotFound());
     }
 }

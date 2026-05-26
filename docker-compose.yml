@@ -58,8 +58,16 @@ services:
     environment:
       JWT_SECRET: ${JWT_SECRET:-msa-commerce-jwt-secret-key-must-be-at-least-256-bits-long}
       SERVER_PORT: 8081
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: auth_db
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
       - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - msa-network
 

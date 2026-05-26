@@ -5,6 +5,7 @@ export interface Stock {
     productId: number
     productName: string
     quantity: number
+    price: number
     imageName?: string
 }
 

@@ -96,3 +96,32 @@ src/main/java/com/msa/{service}/
 - DB 패스워드는 환경변수로 관리
 - 소스코드에 민감 정보 하드코딩 금지 (test/test 인증정보 제외)
 - SQL Injection 방지: JPA 파라미터 바인딩 사용
+
+## DB 설계 원칙
+
+### FK 관계 및 정규화 (필수)
+
+**같은 서비스 내 엔티티 간 관계**
+- 같은 서비스 DB 내에서 연관된 엔티티는 `@OneToOne`, `@ManyToOne`, `@OneToMany` 등 JPA 관계 어노테이션으로 반드시 매핑한다
+- `Long userId` 처럼 단순 ID 필드로만 타 엔티티를 참조하는 방식은 같은 서비스 내에서 금지한다 — JPA 관계 매핑으로 DB 레벨 FK 제약과 정합성을 함께 보장한다
+- FetchType은 기본적으로 **LAZY**를 사용한다 (`fetch = FetchType.LAZY`)
+
+**서비스 간 데이터 참조**
+- 서비스 간에는 DB를 공유하지 않으므로, 타 서비스 엔티티를 JPA로 직접 참조하는 것은 금지한다
+- 타 서비스 데이터는 ID(Long)만 컬럼으로 저장한다 (예: `orderId`, `productId`)
+
+**새 엔티티 설계 시 체크리스트**
+- 이 필드가 같은 서비스의 다른 엔티티에 이미 존재하는 데이터인가? → JPA 관계 매핑으로 참조
+- 이 테이블의 컬럼이 반복·중복되는 데이터인가? → 별도 테이블로 분리 (3NF)
+- 관계의 주인(FK를 가진 쪽)은 어디인가? → 비즈니스상 "의존하는" 쪽이 FK를 보유
+
+**관계 유형별 어노테이션**
+
+| 관계 | 어노테이션 | FK 위치 |
+|------|-----------|---------|
+| 1:1  | `@OneToOne(fetch = FetchType.LAZY)` + `@JoinColumn` | 의존하는 쪽 |
+| N:1  | `@ManyToOne(fetch = FetchType.LAZY)` + `@JoinColumn` | N 쪽 |
+| 1:N  | `@OneToMany(mappedBy = "필드명")` | 컬렉션 쪽엔 FK 없음 |
+
+- 역방향 탐색(`mappedBy`)은 실제로 필요한 경우에만 추가한다 — 불필요한 양방향 매핑 금지
+- Spring Data JPA에서 관계 필드로 조회 시 property traversal 문법을 사용한다 (예: `findByUser_Id(Long userId)` → `user.id` 탐색)

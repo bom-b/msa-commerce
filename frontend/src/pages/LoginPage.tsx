@@ -16,7 +16,7 @@ export default function LoginPage() {
         setLoading(true)
 
         try {
-            const { token } = await login({ id : username, password : password })
+            const { token } = await login({ username, password })
             setAuth(token, username)
             navigate('/')
         } catch {

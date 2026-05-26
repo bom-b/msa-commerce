@@ -11,6 +11,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * 재고 엔티티.
  * 상품별 재고 수량을 관리한다.
@@ -42,6 +44,10 @@ public class Stock {
 
     /** 상품 이미지 파일명. */
     private String imageName;
+
+    /** 상품 가격 (원화). */
+    @Column(nullable = false)
+    private BigDecimal price;
 
     /**
      * 재고 수량을 차감한다.

@@ -128,7 +128,12 @@ export default function ProductsPage() {
                             </div>
 
                             <div className={styles.stockInfo}>
-                                <span className={styles.stockLabel}>현재 재고</span>
+                                <span className={styles.stockLabel}>가격</span>
+                                <span className={styles.stockValue}>{stock.price.toLocaleString()}원</span>
+                            </div>
+
+                            <div className={styles.stockInfo}>
+                                <span className={styles.stockLabel}>재고</span>
                                 <span className={styles.stockValue}>{stock.quantity.toLocaleString()}개</span>
                             </div>
 
