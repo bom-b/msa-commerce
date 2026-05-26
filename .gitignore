@@ -10,6 +10,9 @@ build/
 *.class
 out/
 
+# Claude
+.claude/settings.local.json
+
 # Environment
 .env
 .env.local
@@ -41,7 +44,6 @@ desktop.ini
 # Java
 *.jar
 *.war
-!gradle/wrapper/gradle-wrapper.jar
 
 # Security
 *.p12
