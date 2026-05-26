@@ -24,7 +24,7 @@ public class StockService {
      * @return 재고 응답 DTO 목록
      */
     public List<StockResponse> findAll() {
-        return stockRepository.findAll().stream()
+        return stockRepository.findAllWithProduct().stream()
                 .map(StockResponse::from)
                 .toList();
     }

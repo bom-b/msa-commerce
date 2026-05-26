@@ -32,11 +32,11 @@ public record StockResponse(
     public static StockResponse from(Stock stock) {
         return new StockResponse(
                 stock.getId(),
-                stock.getProductId(),
-                stock.getProductName(),
+                stock.getProduct().getId(),
+                stock.getProduct().getProductName(),
                 stock.getQuantity(),
-                stock.getImageName(),
-                stock.getPrice()
+                stock.getProduct().getImageName(),
+                stock.getProduct().getPrice()
         );
     }
 }

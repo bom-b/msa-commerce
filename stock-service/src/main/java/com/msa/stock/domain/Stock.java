@@ -2,20 +2,20 @@ package com.msa.stock.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 /**
  * 재고 엔티티.
- * 상품별 재고 수량을 관리한다.
  */
 @Entity
 @Table(name = "stocks")
@@ -25,35 +25,25 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class Stock {
 
-    /** 재고 ID (기본키, 자동 증가). */
+    /** 재고 PK. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** 상품 ID. */
-    @Column(nullable = false, unique = true)
-    private Long productId;
-
-    /** 상품명. */
-    @Column(nullable = false)
-    private String productName;
+    /** 재고와 1:1 연관된 상품. */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false, unique = true)
+    private Product product;
 
     /** 현재 재고 수량. */
     @Column(nullable = false)
     private int quantity;
 
-    /** 상품 이미지 파일명. */
-    private String imageName;
-
-    /** 상품 가격 (원화). */
-    @Column(nullable = false)
-    private BigDecimal price;
-
     /**
-     * 재고 수량을 차감한다.
+     * 재고를 차감한다.
      *
      * @param amount 차감할 수량
-     * @throws IllegalArgumentException 차감 후 재고가 음수가 되는 경우
+     * @throws IllegalArgumentException 현재 재고가 차감 수량보다 적을 때
      */
     public void decreaseQuantity(int amount) {
         if (this.quantity < amount) {
