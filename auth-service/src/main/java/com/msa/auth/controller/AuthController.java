@@ -1,6 +1,7 @@
 package com.msa.auth.controller;
 
 import com.msa.auth.dto.BalanceResponse;
+import com.msa.auth.dto.ChargeRequest;
 import com.msa.auth.dto.LoginRequest;
 import com.msa.auth.dto.LoginResponse;
 import com.msa.auth.service.AuthService;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,5 +48,20 @@ public class AuthController {
     @GetMapping("/balance")
     public ResponseEntity<BalanceResponse> getBalance(@RequestHeader("X-User-Id") Long userId) {
         return ResponseEntity.ok(authService.getBalance(userId));
+    }
+
+    /**
+     * 인증된 사용자의 예치금을 충전한다.
+     *
+     * @param userId  X-User-Id 헤더에서 추출한 사용자 ID
+     * @param request 충전 요청 바디 (amount)
+     * @return {@code 200 OK}와 함께 충전 후 잔액 정보
+     */
+    @Authenticated
+    @PostMapping("/balance/charge")
+    public ResponseEntity<BalanceResponse> charge(
+            @RequestHeader("X-User-Id") Long userId,
+            @Valid @RequestBody ChargeRequest request) {
+        return ResponseEntity.ok(authService.charge(userId, request.amount()));
     }
 }

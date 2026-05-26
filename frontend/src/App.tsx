@@ -10,6 +10,7 @@ import ProductsPage from './pages/ProductsPage'
 import InventoryPage from './pages/InventoryPage'
 import OrdersPage from './pages/OrdersPage'
 import OrderDetailPage from './pages/OrderDetailPage'
+import ChargePage from './pages/ChargePage'
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -43,6 +44,7 @@ export default function App() {
                             <Route path="/inventory" element={<InventoryPage />} />
                             <Route path="/orders" element={<OrdersPage />} />
                             <Route path="/orders/:id" element={<OrderDetailPage />} />
+                            <Route path="/charge" element={<ChargePage />} />
                         </Route>
                     </Route>
 

@@ -35,6 +35,18 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 비즈니스 규칙 위반(잘못된 인자) 시 400을 반환한다.
+     *
+     * @param e {@link IllegalArgumentException} 잘못된 인자 예외
+     * @return 400 Bad Request + 예외 메시지
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException e) {
+        log.warn("잘못된 요청: {}", e.getMessage());
+        return ResponseEntity.badRequest().body(ErrorResponse.of(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+    }
+
+    /**
      * 요청한 리소스가 존재하지 않을 때 404를 반환한다.
      *
      * @param e {@link NoSuchElementException} 리소스 없음 예외

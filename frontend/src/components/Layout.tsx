@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '../store/authStore'
+import { getBalance } from '../api/auth'
 import UserIcon from '../assets/icon/user.svg?react'
 import PackageIcon from '../assets/icon/package.svg?react'
 import InfoIcon from '../assets/icon/info.svg?react'
@@ -21,6 +23,12 @@ export default function Layout() {
     const { userId, isAuthenticated, clearAuth } = useAuthStore()
     const [dropdownOpen, setDropdownOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
+
+    const { data: balanceData } = useQuery({
+        queryKey: ['balance'],
+        queryFn: getBalance,
+        enabled: isAuthenticated && dropdownOpen,
+    })
 
     // 드롭다운 외부 클릭 시 닫기
     useEffect(() => {
@@ -55,6 +63,8 @@ export default function Layout() {
                 <div className={styles.headerRight} ref={dropdownRef}>
                     {isAuthenticated ? (
                         <>
+                            <p className={styles.userName}>{userId} 님</p>
+
                             <button
                                 className={styles.iconBtn}
                                 onClick={() => setDropdownOpen((prev) => !prev)}
@@ -65,9 +75,21 @@ export default function Layout() {
 
                             {dropdownOpen && (
                                 <div className={styles.userDropdown}>
-                                    <div className={styles.userInfo}>
-                                        <p className={styles.userLabel}>로그인 계정</p>
-                                        <p className={styles.userName}>{userId}</p>
+                                    <div className={styles.balanceInfo}>
+                                        <div className={styles.balanceRow}>
+                                            <span className={styles.balanceLabel}>예치금</span>
+                                            <span className={styles.balanceAmount}>
+                                                {balanceData
+                                                    ? `${balanceData.balance.toLocaleString('ko-KR')}원`
+                                                    : '로딩 중...'}
+                                        </span>
+                                        </div>
+                                        <button
+                                            className={styles.chargeBtn}
+                                            onClick={() => { navigate('/charge'); setDropdownOpen(false) }}
+                                        >
+                                            예치금 충전
+                                        </button>
                                     </div>
                                     <button
                                         className={styles.dropdownNavBtn}

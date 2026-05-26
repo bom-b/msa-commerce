@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -89,5 +90,34 @@ class AuthControllerTest {
         mockMvc.perform(get("/auth/balance")
                 .header("X-User-Id", "999"))
             .andExpect(status().isNotFound());
+    }
+
+    /**
+     * 유효한 금액으로 충전 요청 시 {@code 200 OK}와 충전 후 잔액이 반환되어야 한다.
+     */
+    @Test
+    void charge_withValidAmount_returns200WithUpdatedBalance() throws Exception {
+        when(authService.charge(eq(1L), any())).thenReturn(new BalanceResponse(1L, BigDecimal.valueOf(60000)));
+
+        mockMvc.perform(post("/auth/balance/charge")
+                .header("X-User-Id", "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"amount\":10000}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.balance").value(60000));
+    }
+
+    /**
+     * 0 금액으로 충전 요청 시 {@code 400 Bad Request}가 반환되어야 한다.
+     */
+    @Test
+    void charge_withZeroAmount_returns400() throws Exception {
+        when(authService.charge(eq(1L), argThat(a -> a != null && a.compareTo(BigDecimal.ZERO) == 0))).thenThrow(new IllegalArgumentException("충전 금액은 0보다 커야 합니다."));
+
+        mockMvc.perform(post("/auth/balance/charge")
+                .header("X-User-Id", "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"amount\":0}"))
+            .andExpect(status().isBadRequest());
     }
 }

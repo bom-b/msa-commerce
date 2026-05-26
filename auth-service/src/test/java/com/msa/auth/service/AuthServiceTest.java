@@ -133,6 +133,42 @@ class AuthServiceTest {
     }
 
     /**
+     * 유효한 금액으로 충전 시 충전 후 잔액이 반환되어야 한다.
+     */
+    @Test
+    void charge_withValidAmount_returnsUpdatedBalance() {
+        User user = new User(1L, "test", "test");
+        UserBalance userBalance = UserBalance.builder()
+            .id(1L)
+            .user(user)
+            .balance(new BigDecimal("50000"))
+            .build();
+        when(userBalanceRepository.findByUser_Id(1L)).thenReturn(Optional.of(userBalance));
+
+        BalanceResponse response = authService.charge(1L, new BigDecimal("10000"));
+
+        assertThat(response.balance()).isEqualByComparingTo(new BigDecimal("60000"));
+    }
+
+    /**
+     * 0 이하 금액으로 충전 시 {@link IllegalArgumentException}이 발생해야 한다.
+     */
+    @Test
+    void charge_withZeroAmount_throwsIllegalArgumentException() {
+        assertThatThrownBy(() -> authService.charge(1L, BigDecimal.ZERO))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    /**
+     * 음수 금액으로 충전 시 {@link IllegalArgumentException}이 발생해야 한다.
+     */
+    @Test
+    void charge_withNegativeAmount_throwsIllegalArgumentException() {
+        assertThatThrownBy(() -> authService.charge(1L, new BigDecimal("-1000")))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    /**
      * 테스트용 {@link LoginRequest} 객체를 생성하는 헬퍼 메서드.
      *
      * @param id       사용자 ID

@@ -1,0 +1,162 @@
+@use '../styles/variables' as v;
+@use '../styles/mixins' as m;
+
+.page {
+    padding: v.$page-padding-y v.$page-padding-x;
+    max-width: v.$detail-content-width;
+    margin: 0 auto;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-8;
+}
+
+.title {
+    font-size: v.$font-size-2xl;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-text;
+    margin: 0;
+}
+
+.balanceCard {
+    background: v.$color-bg;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-lg;
+    padding: v.$space-8;
+    text-align: center;
+}
+
+.balanceLabel {
+    font-size: v.$font-size-sm;
+    color: v.$color-text-secondary;
+    margin-bottom: v.$space-2;
+}
+
+.balanceAmount {
+    font-size: v.$font-size-3xl;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-text;
+    letter-spacing: -0.5px;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+}
+
+.sectionTitle {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.quickBtns {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: v.$space-3;
+}
+
+.quickBtn {
+    @include m.button-reset;
+    padding: v.$space-3 v.$space-2;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-md;
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-medium;
+    color: v.$color-text;
+    background: v.$color-bg;
+    transition: background v.$transition-fast, border-color v.$transition-fast;
+
+    &:hover:not(:disabled) {
+        background: v.$color-hover-bg;
+        border-color: v.$color-primary;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.form {
+    display: flex;
+    gap: v.$space-3;
+    align-items: stretch;
+}
+
+.inputWrap {
+    @include m.flex-start;
+    flex: 1;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-md;
+    padding: 0 v.$space-4;
+    background: v.$color-bg;
+    transition: border-color v.$transition-fast;
+
+    &:focus-within {
+        border-color: v.$color-primary;
+    }
+}
+
+.input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: v.$font-size-md;
+    font-family: inherit;
+    color: v.$color-text;
+    background: transparent;
+    padding: v.$space-3 0;
+
+    &::placeholder {
+        color: v.$color-text-secondary;
+    }
+
+    /* 숫자 입력 화살표 제거 */
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+    }
+}
+
+.inputUnit {
+    font-size: v.$font-size-base;
+    color: v.$color-text-secondary;
+    margin-left: v.$space-2;
+    flex-shrink: 0;
+}
+
+.submitBtn {
+    @include m.button-reset;
+    padding: v.$space-3 v.$space-8;
+    background: v.$color-primary;
+    color: v.$color-bg;
+    border-radius: v.$radius-md;
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-semibold;
+    transition: opacity v.$transition-fast;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+        opacity: 0.8;
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+.successMsg {
+    font-size: v.$font-size-base;
+    color: v.$color-success;
+    background: v.$color-success-bg;
+    border-radius: v.$radius-md;
+    padding: v.$space-3 v.$space-4;
+    margin: 0;
+}

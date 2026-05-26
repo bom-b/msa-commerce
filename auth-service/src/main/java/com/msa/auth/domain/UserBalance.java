@@ -53,4 +53,17 @@ public class UserBalance {
         }
         this.balance = this.balance.subtract(amount);
     }
+
+    /**
+     * 예치금을 충전한다.
+     *
+     * @param amount 충전할 금액
+     * @throws IllegalArgumentException 충전 금액이 null이거나 0 이하인 경우
+     */
+    public void charge(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다.");
+        }
+        this.balance = this.balance.add(amount);
+    }
 }
