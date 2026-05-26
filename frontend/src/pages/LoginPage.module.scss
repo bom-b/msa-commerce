@@ -51,15 +51,6 @@
     @include m.input-base;
 }
 
-.error {
-    padding: v.$space-3 v.$space-4;
-    background: v.$color-error-bg;
-    border: 1px solid #e8a09a;
-    border-radius: v.$radius-sm;
-    font-size: v.$font-size-sm;
-    color: v.$color-error;
-}
-
 .submitBtn {
     @include m.btn-primary;
     width: 100%;

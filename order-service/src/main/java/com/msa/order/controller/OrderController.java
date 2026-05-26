@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 /**
  * 주문 REST 컨트롤러.
@@ -49,17 +48,12 @@ public class OrderController {
      * 주문 ID로 단건 주문을 조회한다.
      *
      * @param id 조회할 주문 ID
-     * @return 200 OK + 주문 응답 DTO, 존재하지 않으면 404 Not Found
+     * @return 200 OK + 주문 응답 DTO
      */
     @Authenticated
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {
-        try {
-            OrderResponse response = orderService.getOrder(id);
-            return ResponseEntity.ok(response);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(orderService.getOrder(id));
     }
 
     /**

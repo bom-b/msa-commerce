@@ -206,6 +206,6 @@
 .main {
     flex: 1;
     margin-left: v.$sidebar-width;
-    min-height: calc(100vh - v.$header-height);
+    min-height: calc(100dvh - v.$header-height);
     background: v.$color-page-bg;
 }

@@ -9,12 +9,10 @@ export default function LoginPage() {
     const { setAuth } = useAuthStore()
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
-    const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
 
     async function handleSubmit(e: FormEvent) {
         e.preventDefault()
-        setError(null)
         setLoading(true)
 
         try {
@@ -22,7 +20,7 @@ export default function LoginPage() {
             setAuth(token, username)
             navigate('/')
         } catch {
-            setError('로그인에 실패했습니다. 아이디 또는 패스워드를 확인하세요.')
+            // 전역 Axios 인터셉터가 window.alert()로 처리
         } finally {
             setLoading(false)
         }
@@ -62,8 +60,6 @@ export default function LoginPage() {
                             required
                         />
                     </div>
-
-                    {error && <p className={styles.error}>{error}</p>}
 
                     <button className={styles.submitBtn} type="submit" disabled={loading}>
                         {loading ? '로그인 중...' : '로그인'}

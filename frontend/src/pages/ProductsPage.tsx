@@ -10,7 +10,6 @@ interface OrderState {
     quantity: number
     loading: boolean
     success: string | null
-    error: string | null
 }
 
 function getStockBadgeClass(quantity: number, styles: Record<string, string>) {
@@ -38,7 +37,7 @@ export default function ProductsPage() {
     const [imgErrors, setImgErrors] = useState<Set<number>>(new Set())
 
     function getOrderState(productId: number): OrderState {
-        return orderStates[productId] ?? { quantity: 1, loading: false, success: null, error: null }
+        return orderStates[productId] ?? { quantity: 1, loading: false, success: null }
     }
 
     function setOrderField(productId: number, partial: Partial<OrderState>) {
@@ -57,7 +56,7 @@ export default function ProductsPage() {
         const state = getOrderState(stock.productId)
         if (state.quantity < 1) return
 
-        setOrderField(stock.productId, { loading: true, success: null, error: null })
+        setOrderField(stock.productId, { loading: true, success: null })
         try {
             const order = await createOrder({ productId: stock.productId, quantity: state.quantity })
             setOrderField(stock.productId, {
@@ -68,10 +67,8 @@ export default function ProductsPage() {
             // 재고 목록 갱신
             queryClient.invalidateQueries({ queryKey: ['stocks'] })
         } catch {
-            setOrderField(stock.productId, {
-                loading: false,
-                error: '주문 생성에 실패했습니다. 잠시 후 다시 시도하세요.',
-            })
+            // 전역 Axios 인터셉터가 window.alert()로 처리
+            setOrderField(stock.productId, { loading: false })
         }
     }
 
@@ -174,7 +171,6 @@ export default function ProductsPage() {
                                         </button>
                                     </p>
                                 )}
-                                {state.error && <p className={styles.errorMsg}>{state.error}</p>}
                             </div>
                             </div>
                         </div>

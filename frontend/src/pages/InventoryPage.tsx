@@ -7,7 +7,6 @@ interface AddState {
     quantity: number
     loading: boolean
     success: string | null
-    error: string | null
 }
 
 export default function InventoryPage() {
@@ -20,7 +19,7 @@ export default function InventoryPage() {
     const [addStates, setAddStates] = useState<Record<number, AddState>>({})
 
     function getAddState(productId: number): AddState {
-        return addStates[productId] ?? { quantity: 10, loading: false, success: null, error: null }
+        return addStates[productId] ?? { quantity: 10, loading: false, success: null }
     }
 
     function setAddField(productId: number, partial: Partial<AddState>) {
@@ -34,7 +33,7 @@ export default function InventoryPage() {
         const state = getAddState(stock.productId)
         if (state.quantity < 1) return
 
-        setAddField(stock.productId, { loading: true, success: null, error: null })
+        setAddField(stock.productId, { loading: true, success: null })
         try {
             // 재고 추가 API — stock-service에 PUT /stocks/{productId}/quantity 구현 예정
             await addStock(stock.productId, state.quantity)
@@ -45,11 +44,8 @@ export default function InventoryPage() {
             })
             queryClient.invalidateQueries({ queryKey: ['stocks'] })
         } catch {
-            setAddField(stock.productId, {
-                loading: false,
-                // 백엔드 미구현 안내 메시지
-                error: '재고 추가 API가 아직 구현되지 않았습니다.',
-            })
+            // 전역 Axios 인터셉터가 window.alert()로 처리
+            setAddField(stock.productId, { loading: false })
         }
     }
 
@@ -136,7 +132,6 @@ export default function InventoryPage() {
                                     </td>
                                     <td className={`${styles.td} ${styles.resultCell}`}>
                                         {state.success && <span className={styles.successMsg}>{state.success}</span>}
-                                        {state.error && <span className={styles.errorMsg}>{state.error}</span>}
                                     </td>
                                 </tr>
                             )

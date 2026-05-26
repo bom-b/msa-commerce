@@ -20,7 +20,7 @@ client.interceptors.request.use((config) => {
     return config
 })
 
-// 응답 인터셉터: 401 시 로그아웃 처리
+// 응답 인터셉터: 401 시 로그아웃 처리, 그 외 HTTP 에러는 백엔드 메시지를 alert으로 표시
 client.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -28,7 +28,16 @@ client.interceptors.response.use(
             localStorage.removeItem('token')
             localStorage.removeItem('userId')
             window.location.href = '/login'
+            return Promise.reject(error)
         }
+
+        const message: string =
+            error.response?.data?.message ??
+            error.response?.data?.error ??
+            error.message ??
+            '알 수 없는 오류가 발생했습니다.'
+
+        window.alert(message)
         return Promise.reject(error)
     }
 )

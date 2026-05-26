@@ -10,7 +10,9 @@
       "Bash(Select-Object Name)",
       "Bash(xargs cat)",
       "Bash(Get-ChildItem -Path \"C:\\\\workspace\\\\msa-commerce\" -Recurse -Include \"application.yml\" -ErrorAction SilentlyContinue)",
-      "Bash(Select-Object -First 5)"
+      "Bash(Select-Object -First 5)",
+      "Read(//mnt/c/workspace/**)",
+      "Bash(dir \"C:\\\\\\\\workspace\\\\\\\\msa-commerce\")"
     ]
   }
 }

@@ -2,6 +2,7 @@ package com.msa.common.config;
 
 import com.msa.common.auth.interceptor.AuthInterceptor;
 import com.msa.common.auth.resolver.CurrentUserArgumentResolver;
+import com.msa.common.exception.GlobalExceptionHandler;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -18,6 +19,16 @@ import java.util.List;
  */
 @AutoConfiguration
 public class CommonWebConfig implements WebMvcConfigurer {
+
+    /**
+     * 전역 예외 처리 핸들러 빈.
+     *
+     * @return {@link GlobalExceptionHandler} 인스턴스
+     */
+    @Bean
+    public GlobalExceptionHandler globalExceptionHandler() {
+        return new GlobalExceptionHandler();
+    }
 
     /**
      * 인증 인터셉터 빈.

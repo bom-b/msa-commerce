@@ -56,7 +56,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
 
     /**
-     * {@code 401 Unauthorized} JSON 응답을 작성한다.
+     * {@code 401 Unauthorized} JSON 응답을 작성한다. {@link com.msa.common.exception.ErrorResponse} 형식과 동일한 구조를 사용한다.
      *
      * @param response HTTP 응답 객체
      * @param message  에러 메시지
@@ -65,7 +65,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     private void writeUnauthorized(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
-        byte[] body = ("{\"error\":\"" + message + "\"}").getBytes(StandardCharsets.UTF_8);
+        byte[] body = ("{\"status\":401,\"message\":\"" + message + "\"}").getBytes(StandardCharsets.UTF_8);
         response.getOutputStream().write(body);
     }
 }

@@ -203,15 +203,6 @@
     color: v.$color-success;
 }
 
-.errorMsg {
-    margin-top: v.$space-2;
-    padding: v.$space-2 v.$space-3;
-    background: v.$color-error-bg;
-    border-radius: v.$radius-sm;
-    font-size: v.$font-size-sm;
-    color: v.$color-error;
-}
-
 .inlineTextBtn {
     @include m.button-reset;
     color: inherit;

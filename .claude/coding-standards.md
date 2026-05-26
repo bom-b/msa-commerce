@@ -50,6 +50,16 @@
 
 **기준**: `@param`, `@return`, `@throws` 태그 외에 추가 단락(`<p>`)이 필요하다면, 그 내용이 코드를 읽어서는 절대 알 수 없는 외부 제약이나 히든 인변식인지 먼저 물어볼 것. 단순히 "왜 이렇게 구현했는지" 설명하는 내용은 삭제한다.
 
+## 예외 처리 원칙
+
+- **컨트롤러 try-catch 금지**: `GlobalExceptionHandler`가 전역으로 처리하므로, 컨트롤러에서
+  `NoSuchElementException`, `MethodArgumentNotValidException` 등 비즈니스 예외를 개별
+  try-catch하지 않는다. 예외는 그대로 throw하면 핸들러가 HTTP 응답으로 변환한다.
+- **서비스 계층**: 비즈니스 규칙 위반은 `NoSuchElementException` 또는 `IllegalArgumentException`을
+  throw한다. 직접 HTTP 상태를 결정하지 않는다.
+- **Kafka 컨슈머**: 멱등성 보장용 중복 처리는 컨슈머 내부에서 직접 처리한다
+  (HTTP 레이어가 아니므로 GlobalExceptionHandler 적용 대상 아님).
+
 ## Spring Boot 서비스 공통 구조
 
 ```
