@@ -1,0 +1,39 @@
+@use '../styles/variables' as v;
+@use '../styles/mixins' as m;
+
+.page {
+    padding: v.$page-padding-y v.$page-padding-x;
+    max-width: v.$max-content-width;
+}
+
+.pageHeader {
+    margin-bottom: v.$space-4;
+}
+
+.pageTitle {
+    font-size: v.$font-size-2xl;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-primary;
+    letter-spacing: -0.4px;
+}
+
+// 안내 배너
+.infoBanner {
+    background: v.$color-bg;
+    padding: v.$space-4 v.$space-5;
+    border-radius: v.$radius-md;
+    margin-bottom: v.$space-8;
+}
+
+.infoBannerTitle {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-text;
+    margin-bottom: v.$space-2;
+}
+
+.infoBannerDesc {
+    font-size: v.$font-size-sm;
+    color: v.$color-text;
+    line-height: 1.6;
+}

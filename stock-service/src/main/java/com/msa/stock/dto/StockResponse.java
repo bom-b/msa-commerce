@@ -9,12 +9,14 @@ import com.msa.stock.domain.Stock;
  * @param productId   상품 ID
  * @param productName 상품명
  * @param quantity    현재 재고 수량
+ * @param imageName   상품 이미지 파일명
  */
 public record StockResponse(
         Long id,
         Long productId,
         String productName,
-        int quantity
+        int quantity,
+        String imageName
 ) {
 
     /**
@@ -28,7 +30,8 @@ public record StockResponse(
                 stock.getId(),
                 stock.getProductId(),
                 stock.getProductName(),
-                stock.getQuantity()
+                stock.getQuantity(),
+                stock.getImageName()
         );
     }
 }

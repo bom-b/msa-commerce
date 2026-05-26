@@ -3,7 +3,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Layout from './components/Layout'
 import PrivateRoute from './components/PrivateRoute'
 import PublicOnlyRoute from './components/PublicOnlyRoute'
+import ScrollToTop from './components/ScrollToTop'
 import LoginPage from './pages/LoginPage'
+import AboutPage from './pages/AboutPage'
 import ProductsPage from './pages/ProductsPage'
 import InventoryPage from './pages/InventoryPage'
 import OrdersPage from './pages/OrdersPage'
@@ -22,6 +24,7 @@ export default function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <BrowserRouter>
+                <ScrollToTop />
                 <Routes>
                     {/* 로그인 (비로그인 전용) */}
                     <Route element={<PublicOnlyRoute />}>
@@ -31,6 +34,7 @@ export default function App() {
                     {/* 비로그인 접근 가능 */}
                     <Route element={<Layout />}>
                         <Route path="/" element={<ProductsPage />} />
+                        <Route path="/about" element={<AboutPage />} />
                     </Route>
 
                     {/* 인증 필요 페이지 */}

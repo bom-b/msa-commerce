@@ -1,7 +1,7 @@
 import client from './client'
 
 export interface LoginRequest {
-    username: string
+    id: string
     password: string
 }
 

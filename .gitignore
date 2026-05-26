@@ -47,3 +47,6 @@ desktop.ini
 *.p12
 *.jks
 *.keystore
+
+# Dev images
+frontend/public/images/stock/*

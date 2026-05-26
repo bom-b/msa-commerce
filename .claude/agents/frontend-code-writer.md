@@ -21,6 +21,9 @@ description: React, TypeScript, SCSS 등 프론트엔드 코드 작성 전담 �
 - Axios (API 통신, JWT 인터셉터)
 - React Router DOM (URL 기반 라우팅)
 
+## 코드 작성 시 준수 사항
+- 백엔드 API 호출 코드 작성시, 반드시 백엔드의 API 명세를 참고하여 정확한 엔드포인트, HTTP 메서드, 요청/응답 형식을 준수한다.
+
 ## 디자인 시스템 준수 사항
 
 `.claude/frontend-design-system.md`의 내용을 반드시 따른다:

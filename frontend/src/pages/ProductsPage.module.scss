@@ -36,7 +36,7 @@
     @extend .stateBox;
     color: v.$color-error;
     background: v.$color-error-bg;
-    border-color: #e8b4b0;
+    border-color: v.$color-error-border;
 }
 
 // 상품 그리드
@@ -49,12 +49,53 @@
 // 상품 카드
 .card {
     @include m.card;
-    padding: v.$space-6;
+    padding: 0;
+    overflow: hidden;
     transition: box-shadow v.$transition-base;
 
     &:hover {
         box-shadow: v.$shadow-md;
     }
+}
+
+// 이미지 영역
+.productImageWrapper {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background: v.$color-bg;
+    border-bottom: 1px solid v.$color-border;
+    overflow: hidden;
+}
+
+.productImage {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    padding: v.$space-5;
+}
+
+.productImagePlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: v.$color-active-bg;
+
+    span {
+        font-size: 40px;
+        font-weight: v.$font-weight-bold;
+        color: v.$color-secondary;
+        text-transform: uppercase;
+        line-height: 1;
+    }
+}
+
+// 카드 내용 영역 (이미지 아래 패딩)
+.cardBody {
+    padding: v.$space-6;
 }
 
 .cardHeader {
@@ -73,7 +114,7 @@
     font-weight: v.$font-weight-medium;
     padding: 2px v.$space-2;
     border-radius: v.$radius-full;
-    background: #f0f0f0;
+    background: v.$color-active-bg;
     color: v.$color-text-secondary;
 }
 

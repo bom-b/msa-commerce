@@ -19,19 +19,27 @@ spring:
         - id: auth-service
           uri: http://${AUTH_SERVICE_HOST:localhost}:8081
           predicates:
-            - Path=/auth/**
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
         - id: order-service
           uri: http://${ORDER_SERVICE_HOST:localhost}:8082
           predicates:
-            - Path=/orders/**
+            - Path=/api/orders/**
+          filters:
+            - StripPrefix=1
         - id: payment-service
           uri: http://${PAYMENT_SERVICE_HOST:localhost}:8083
           predicates:
-            - Path=/payments/**
+            - Path=/api/payments/**
+          filters:
+            - StripPrefix=1
         - id: stock-service
           uri: http://${STOCK_SERVICE_HOST:localhost}:8084
           predicates:
-            - Path=/stocks/**
+            - Path=/api/stocks/**
+          filters:
+            - StripPrefix=1
 
 server:
   port: ${SERVER_PORT:8080}

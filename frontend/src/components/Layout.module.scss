@@ -106,6 +106,21 @@
     color: v.$color-text;
 }
 
+.dropdownNavBtn {
+    @include m.button-reset;
+    @include m.flex-start;
+    gap: v.$space-2;
+    width: 100%;
+    padding: v.$space-3 v.$space-4;
+    font-size: v.$font-size-base;
+    color: v.$color-text;
+    transition: background v.$transition-fast;
+
+    &:hover {
+        background: v.$color-hover-bg;
+    }
+}
+
 .logoutBtn {
     @include m.button-reset;
     @include m.flex-start;

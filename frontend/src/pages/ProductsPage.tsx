@@ -35,6 +35,7 @@ export default function ProductsPage() {
     })
 
     const [orderStates, setOrderStates] = useState<Record<number, OrderState>>({})
+    const [imgErrors, setImgErrors] = useState<Set<number>>(new Set())
 
     function getOrderState(productId: number): OrderState {
         return orderStates[productId] ?? { quantity: 1, loading: false, success: null, error: null }
@@ -104,6 +105,24 @@ export default function ProductsPage() {
 
                     return (
                         <div key={stock.productId} className={styles.card}>
+                            <div className={styles.productImageWrapper}>
+                                {stock.imageName && !imgErrors.has(stock.productId) ? (
+                                    <img
+                                        className={styles.productImage}
+                                        src={`/images/stock/${stock.imageName}`}
+                                        alt={stock.productName}
+                                        onError={() =>
+                                            setImgErrors((prev) => new Set(prev).add(stock.productId))
+                                        }
+                                    />
+                                ) : (
+                                    <div className={styles.productImagePlaceholder}>
+                                        <span>{stock.productName.charAt(0)}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className={styles.cardBody}>
                             <div className={styles.cardHeader}>
                                 <span className={styles.productName}>{stock.productName}</span>
                                 <span className={getStockBadgeClass(stock.quantity, styles)}>
@@ -156,6 +175,7 @@ export default function ProductsPage() {
                                     </p>
                                 )}
                                 {state.error && <p className={styles.errorMsg}>{state.error}</p>}
+                            </div>
                             </div>
                         </div>
                     )

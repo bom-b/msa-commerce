@@ -3,15 +3,16 @@ import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import UserIcon from '../assets/icon/user.svg?react'
 import PackageIcon from '../assets/icon/package.svg?react'
+import InfoIcon from '../assets/icon/info.svg?react'
 import InventoryIcon from '../assets/icon/inventory.svg?react'
 import OrdersIcon from '../assets/icon/orders.svg?react'
 import LogoutIcon from '../assets/icon/logout.svg?react'
 import styles from './Layout.module.scss'
 
 const NAV_ITEMS = [
+    { path: '/about', label: '프로젝트 소개', Icon: InfoIcon },
     { path: '/', label: '상품 목록', Icon: PackageIcon },
     { path: '/inventory', label: '재고 관리', Icon: InventoryIcon },
-    { path: '/orders', label: '주문 내역', Icon: OrdersIcon },
 ]
 
 export default function Layout() {
@@ -68,6 +69,13 @@ export default function Layout() {
                                         <p className={styles.userLabel}>로그인 계정</p>
                                         <p className={styles.userName}>{userId}</p>
                                     </div>
+                                    <button
+                                        className={styles.dropdownNavBtn}
+                                        onClick={() => { navigate('/orders'); setDropdownOpen(false) }}
+                                    >
+                                        <OrdersIcon width={16} height={16} />
+                                        주문 내역
+                                    </button>
                                     <button className={styles.logoutBtn} onClick={handleLogout}>
                                         <LogoutIcon width={16} height={16} />
                                         로그아웃

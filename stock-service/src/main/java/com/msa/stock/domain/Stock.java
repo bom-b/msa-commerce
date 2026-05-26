@@ -40,6 +40,9 @@ public class Stock {
     @Column(nullable = false)
     private int quantity;
 
+    /** 상품 이미지 파일명. */
+    private String imageName;
+
     /**
      * 재고 수량을 차감한다.
      *
