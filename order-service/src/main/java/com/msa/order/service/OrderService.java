@@ -1,9 +1,11 @@
 package com.msa.order.service;
 
+import com.msa.order.client.StockServiceClient;
 import com.msa.order.domain.Order;
 import com.msa.order.domain.OrderStatus;
 import com.msa.order.dto.CreateOrderRequest;
 import com.msa.order.dto.OrderResponse;
+import com.msa.order.dto.StockResponse;
 import com.msa.order.dto.event.OrderCreatedEvent;
 import com.msa.order.kafka.producer.OrderEventProducer;
 import com.msa.order.repository.OrderRepository;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -31,6 +34,11 @@ public class OrderService {
     private final OrderRepository orderRepository;
 
     /**
+     * 재고 서비스 클라이언트.
+     */
+    private final StockServiceClient stockServiceClient;
+
+    /**
      * 주문 이벤트 Kafka 발행자.
      */
     private final OrderEventProducer orderEventProducer;
@@ -44,13 +52,18 @@ public class OrderService {
      */
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request, Long userId) {
+
+        StockResponse stock = stockServiceClient.getStock(request.productId());
+
+        BigDecimal totalAmount = stock.price().multiply(BigDecimal.valueOf(request.quantity()));
+
         Order order =
             Order.builder()
                 .userId(userId)
                 .productId(request.productId())
                 .quantity(request.quantity())
                 .status(OrderStatus.PENDING)
-                .totalAmount(request.totalAmount())
+                .totalAmount(totalAmount)
                 .createdAt(LocalDateTime.now())
                 .build();
 

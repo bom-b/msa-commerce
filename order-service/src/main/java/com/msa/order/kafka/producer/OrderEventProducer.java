@@ -28,21 +28,13 @@ public class OrderEventProducer {
      */
     public void sendOrderCreated(OrderCreatedEvent event) {
         log.info("주문 생성 이벤트 발행 - orderId: {}, eventId: {}", event.orderId(), event.eventId());
-        kafkaTemplate
-            .send(KafkaConfig.ORDER_CREATED_TOPIC, String.valueOf(event.orderId()), event)
-            .whenComplete(
-                (result, ex) -> {
-                    if (ex != null) {
-                        log.error(
-                            "주문 생성 이벤트 발행 실패 - orderId: {}, error: {}",
-                            event.orderId(),
-                            ex.getMessage());
-                    } else {
-                        log.info(
-                            "주문 생성 이벤트 발행 성공 - orderId: {}, offset: {}",
-                            event.orderId(),
-                            result.getRecordMetadata().offset());
-                    }
-                });
+        kafkaTemplate.send(KafkaConfig.ORDER_CREATED_TOPIC, String.valueOf(event.orderId()), event)
+            .whenComplete((result, ex) -> {
+                if (ex != null) {
+                    log.error("주문 생성 이벤트 발행 실패 - orderId: {}, error: {}", event.orderId(), ex.getMessage());
+                } else {
+                    log.info("주문 생성 이벤트 발행 성공 - orderId: {}, offset: {}", event.orderId(), result.getRecordMetadata().offset());
+                }
+            });
     }
 }
