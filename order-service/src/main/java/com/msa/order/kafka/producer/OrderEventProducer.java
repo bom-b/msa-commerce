@@ -1,7 +1,7 @@
 package com.msa.order.kafka.producer;
 
 import com.msa.order.config.KafkaConfig;
-import com.msa.order.dto.event.OrderCreatedEvent;
+import com.msa.common.event.OrderCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

@@ -1,8 +1,8 @@
 package com.msa.payment.kafka.consumer;
 
 import com.msa.payment.config.KafkaConfig;
-import com.msa.payment.dto.event.OrderCreatedEvent;
-import com.msa.payment.dto.event.StockInsufficientEvent;
+import com.msa.common.event.OrderCreatedEvent;
+import com.msa.common.event.StockInsufficientEvent;
 import com.msa.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

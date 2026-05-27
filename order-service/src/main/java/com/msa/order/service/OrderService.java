@@ -6,7 +6,7 @@ import com.msa.order.domain.OrderStatus;
 import com.msa.order.dto.CreateOrderRequest;
 import com.msa.order.dto.OrderResponse;
 import com.msa.order.dto.StockResponse;
-import com.msa.order.dto.event.OrderCreatedEvent;
+import com.msa.common.event.OrderCreatedEvent;
 import com.msa.order.kafka.producer.OrderEventProducer;
 import com.msa.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;

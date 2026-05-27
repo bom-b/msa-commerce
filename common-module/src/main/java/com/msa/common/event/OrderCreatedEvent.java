@@ -1,4 +1,4 @@
-package com.msa.payment.dto.event;
+package com.msa.common.event;
 
 import java.math.BigDecimal;
 import java.util.UUID;

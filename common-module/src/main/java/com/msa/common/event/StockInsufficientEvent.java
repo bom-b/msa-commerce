@@ -1,10 +1,11 @@
-package com.msa.payment.dto.event;
+package com.msa.common.event;
 
 import java.util.UUID;
 
 /**
  * 재고 부족 이벤트 DTO. Stock Service가 {@code stock.insufficient} 토픽으로 발행하며,
- * Payment Service가 구독하여 결제를 REFUNDED 상태로 전이하고 {@code payment.failed}를 발행한다.
+ * Order Service가 구독하여 주문을 CANCELLED 상태로 전이시키고,
+ * Payment Service가 구독하여 결제를 환불 처리한다.
  *
  * @param eventId   이벤트 고유 식별자 (멱등성 처리용 UUID)
  * @param orderId   주문 ID

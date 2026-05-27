@@ -1,4 +1,4 @@
-package com.msa.order.dto.event;
+package com.msa.common.event;
 
 import java.util.UUID;
 

@@ -1,10 +1,10 @@
 package com.msa.order.kafka.consumer;
 
 import com.msa.order.config.KafkaConfig;
-import com.msa.order.dto.event.PaymentCompletedEvent;
-import com.msa.order.dto.event.PaymentFailedEvent;
-import com.msa.order.dto.event.StockInsufficientEvent;
-import com.msa.order.dto.event.StockReservedEvent;
+import com.msa.common.event.PaymentCompletedEvent;
+import com.msa.common.event.PaymentFailedEvent;
+import com.msa.common.event.StockInsufficientEvent;
+import com.msa.common.event.StockReservedEvent;
 import com.msa.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.msa.payment.dto.event;
+package com.msa.common.event;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -13,5 +13,6 @@ import java.util.UUID;
  * @param amount    결제 시도 금액
  * @param reason    결제 실패 사유
  */
-public record PaymentFailedEvent(UUID eventId, Long orderId, Long paymentId, BigDecimal amount, String reason) {
+public record PaymentFailedEvent(
+    UUID eventId, Long orderId, Long paymentId, BigDecimal amount, String reason) {
 }

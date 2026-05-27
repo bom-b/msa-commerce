@@ -1,8 +1,8 @@
 package com.msa.payment.kafka.producer;
 
 import com.msa.payment.config.KafkaConfig;
-import com.msa.payment.dto.event.PaymentCompletedEvent;
-import com.msa.payment.dto.event.PaymentFailedEvent;
+import com.msa.common.event.PaymentCompletedEvent;
+import com.msa.common.event.PaymentFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

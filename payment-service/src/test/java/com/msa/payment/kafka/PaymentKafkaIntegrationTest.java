@@ -1,8 +1,8 @@
 package com.msa.payment.kafka;
 
 import com.msa.payment.domain.PaymentStatus;
-import com.msa.payment.dto.event.OrderCreatedEvent;
-import com.msa.payment.dto.event.StockInsufficientEvent;
+import com.msa.common.event.OrderCreatedEvent;
+import com.msa.common.event.StockInsufficientEvent;
 import com.msa.payment.repository.PaymentRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
