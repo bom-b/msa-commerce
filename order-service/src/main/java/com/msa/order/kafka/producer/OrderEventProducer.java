@@ -1,7 +1,7 @@
 package com.msa.order.kafka.producer;
 
-import com.msa.order.config.KafkaConfig;
 import com.msa.common.event.OrderCreatedEvent;
+import com.msa.common.kafka.KafkaTopics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -28,7 +28,7 @@ public class OrderEventProducer {
      */
     public void sendOrderCreated(OrderCreatedEvent event) {
         log.info("주문 생성 이벤트 발행 - orderId: {}, eventId: {}", event.orderId(), event.eventId());
-        kafkaTemplate.send(KafkaConfig.ORDER_CREATED_TOPIC, String.valueOf(event.orderId()), event)
+        kafkaTemplate.send(KafkaTopics.ORDER_CREATED, String.valueOf(event.orderId()), event)
             .whenComplete((result, ex) -> {
                 if (ex != null) {
                     log.error("주문 생성 이벤트 발행 실패 - orderId: {}, error: {}", event.orderId(), ex.getMessage());

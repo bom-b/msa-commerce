@@ -1,7 +1,7 @@
 package com.msa.payment.kafka.consumer;
 
-import com.msa.payment.config.KafkaConfig;
 import com.msa.common.event.OrderCreatedEvent;
+import com.msa.common.kafka.KafkaTopics;
 import com.msa.common.event.StockInsufficientEvent;
 import com.msa.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class PaymentEventConsumer {
      * @param event 주문 생성 이벤트
      */
     @KafkaListener(
-        topics = KafkaConfig.ORDER_CREATED_TOPIC,
+        topics = KafkaTopics.ORDER_CREATED,
         groupId = "payment-service",
         containerFactory = "kafkaListenerContainerFactory")
     public void handleOrderCreated(OrderCreatedEvent event) {
@@ -46,7 +46,7 @@ public class PaymentEventConsumer {
      * @param event 재고 부족 이벤트
      */
     @KafkaListener(
-        topics = KafkaConfig.STOCK_INSUFFICIENT_TOPIC,
+        topics = KafkaTopics.STOCK_INSUFFICIENT,
         groupId = "payment-service",
         containerFactory = "kafkaListenerContainerFactory")
     public void handleStockInsufficient(StockInsufficientEvent event) {

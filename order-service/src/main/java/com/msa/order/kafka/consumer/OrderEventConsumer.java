@@ -1,7 +1,7 @@
 package com.msa.order.kafka.consumer;
 
-import com.msa.order.config.KafkaConfig;
 import com.msa.common.event.PaymentCompletedEvent;
+import com.msa.common.kafka.KafkaTopics;
 import com.msa.common.event.PaymentFailedEvent;
 import com.msa.common.event.StockInsufficientEvent;
 import com.msa.common.event.StockReservedEvent;
@@ -32,7 +32,7 @@ public class OrderEventConsumer {
      * @param event 결제 완료 이벤트
      */
     @KafkaListener(
-        topics = KafkaConfig.PAYMENT_COMPLETED_TOPIC,
+        topics = KafkaTopics.PAYMENT_COMPLETED,
         groupId = "order-service",
         containerFactory = "kafkaListenerContainerFactory")
     public void handlePaymentCompleted(PaymentCompletedEvent event) {
@@ -47,7 +47,7 @@ public class OrderEventConsumer {
      * @param event 결제 실패 이벤트
      */
     @KafkaListener(
-        topics = KafkaConfig.PAYMENT_FAILED_TOPIC,
+        topics = KafkaTopics.PAYMENT_FAILED,
         groupId = "order-service",
         containerFactory = "kafkaListenerContainerFactory")
     public void handlePaymentFailed(PaymentFailedEvent event) {
@@ -65,7 +65,7 @@ public class OrderEventConsumer {
      * @param event 재고 확보 완료 이벤트
      */
     @KafkaListener(
-        topics = KafkaConfig.STOCK_RESERVED_TOPIC,
+        topics = KafkaTopics.STOCK_RESERVED,
         groupId = "order-service",
         containerFactory = "kafkaListenerContainerFactory")
     public void handleStockReserved(StockReservedEvent event) {
@@ -83,7 +83,7 @@ public class OrderEventConsumer {
      * @param event 재고 부족 이벤트
      */
     @KafkaListener(
-        topics = KafkaConfig.STOCK_INSUFFICIENT_TOPIC,
+        topics = KafkaTopics.STOCK_INSUFFICIENT,
         groupId = "order-service",
         containerFactory = "kafkaListenerContainerFactory")
     public void handleStockInsufficient(StockInsufficientEvent event) {

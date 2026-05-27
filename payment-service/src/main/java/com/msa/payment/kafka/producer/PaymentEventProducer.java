@@ -1,7 +1,7 @@
 package com.msa.payment.kafka.producer;
 
-import com.msa.payment.config.KafkaConfig;
 import com.msa.common.event.PaymentCompletedEvent;
+import com.msa.common.kafka.KafkaTopics;
 import com.msa.common.event.PaymentFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ public class PaymentEventProducer {
     public void sendPaymentCompleted(PaymentCompletedEvent event) {
         log.info("결제 완료 이벤트 발행 - orderId: {}, eventId: {}", event.orderId(), event.eventId());
         kafkaTemplate
-            .send(KafkaConfig.PAYMENT_COMPLETED_TOPIC, String.valueOf(event.orderId()), event)
+            .send(KafkaTopics.PAYMENT_COMPLETED, String.valueOf(event.orderId()), event)
             .whenComplete((result, ex) -> {
                 if (ex != null) {
                     log.error("결제 완료 이벤트 발행 실패 - orderId: {}, error: {}", event.orderId(), ex.getMessage());
@@ -45,7 +45,7 @@ public class PaymentEventProducer {
     public void sendPaymentFailed(PaymentFailedEvent event) {
         log.info("결제 실패 이벤트 발행 - orderId: {}, reason: {}, eventId: {}", event.orderId(), event.reason(), event.eventId());
         kafkaTemplate
-            .send(KafkaConfig.PAYMENT_FAILED_TOPIC, String.valueOf(event.orderId()), event)
+            .send(KafkaTopics.PAYMENT_FAILED, String.valueOf(event.orderId()), event)
             .whenComplete((result, ex) -> {
                 if (ex != null) {
                     log.error("결제 실패 이벤트 발행 실패 - orderId: {}, error: {}", event.orderId(), ex.getMessage());
