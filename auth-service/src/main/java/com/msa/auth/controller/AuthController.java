@@ -67,7 +67,7 @@ public class AuthController {
     }
 
     /**
-     * 예치금을 차감한다. Payment Service 내부 호출 전용 엔드포인트.
+     * 예치금을 차감한다.
      *
      * @param request 차감할 사용자 ID와 금액
      * @return {@code 204 No Content}

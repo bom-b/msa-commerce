@@ -1,5 +1,6 @@
 package com.msa.order.service;
 
+import com.msa.order.client.StockServiceClient;
 import com.msa.order.domain.Order;
 import com.msa.order.domain.OrderStatus;
 import com.msa.order.dto.CreateOrderRequest;
@@ -12,6 +13,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -27,6 +29,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final StockServiceClient stockServiceClient;
 
     /**
      * 주문을 생성하고 {@code order.created} 이벤트를 발행한다.
@@ -37,23 +40,29 @@ public class OrderService {
      */
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request, Long userId) {
+        StockServiceClient.StockInfo stockInfo = stockServiceClient.getStock(request.productId());
+        BigDecimal totalAmount = stockInfo.price().multiply(BigDecimal.valueOf(request.quantity()));
+
         Order order = Order.builder()
             .userId(userId)
             .productId(request.productId())
+            .productName(stockInfo.productName())
             .quantity(request.quantity())
+            .totalAmount(totalAmount)
             .status(OrderStatus.PENDING)
             .createdAt(LocalDateTime.now())
             .build();
 
         Order savedOrder = orderRepository.save(order);
-        log.info("주문 생성 완료 - orderId: {}, userId: {}", savedOrder.getId(), savedOrder.getUserId());
+        log.info("주문 생성 완료 - orderId: {}, userId: {}, productName: {}, totalAmount: {}", savedOrder.getId(), savedOrder.getUserId(), savedOrder.getProductName(), savedOrder.getTotalAmount());
 
         OrderCreatedEvent event = new OrderCreatedEvent(
             UUID.randomUUID(),
             savedOrder.getId(),
             savedOrder.getUserId(),
             savedOrder.getProductId(),
-            savedOrder.getQuantity());
+            savedOrder.getQuantity(),
+            savedOrder.getTotalAmount());
 
         eventPublisher.publishEvent(event);
 

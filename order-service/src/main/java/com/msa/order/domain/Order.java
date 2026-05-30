@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -30,9 +31,17 @@ public class Order {
     @Column(nullable = false)
     private Long productId;
 
+    /** 주문 시점에 조회한 상품명 스냅샷. */
+    @Column(nullable = false)
+    private String productName;
+
     /** 주문 수량. */
     @Column(nullable = false)
     private int quantity;
+
+    /** 주문 총 금액 스냅샷 (단가 × 수량). */
+    @Column(nullable = false)
+    private BigDecimal totalAmount;
 
     /** 주문 상태 (PENDING, COMPLETED, CANCELLED). */
     @Enumerated(EnumType.STRING)
@@ -50,17 +59,21 @@ public class Order {
     /**
      * 주문 엔티티 생성자 (빌더 전용).
      *
-     * @param userId    주문자 ID
-     * @param productId 상품 ID
-     * @param quantity  주문 수량
-     * @param status    주문 상태
-     * @param createdAt 생성 일시
+     * @param userId      주문자 ID
+     * @param productId   상품 ID
+     * @param productName 상품명 스냅샷
+     * @param quantity    주문 수량
+     * @param totalAmount 주문 총 금액 스냅샷
+     * @param status      주문 상태
+     * @param createdAt   생성 일시
      */
     @Builder
-    private Order(Long userId, Long productId, int quantity, OrderStatus status, LocalDateTime createdAt) {
+    private Order(Long userId, Long productId, String productName, int quantity, BigDecimal totalAmount, OrderStatus status, LocalDateTime createdAt) {
         this.userId = userId;
         this.productId = productId;
+        this.productName = productName;
         this.quantity = quantity;
+        this.totalAmount = totalAmount;
         this.status = status;
         this.createdAt = createdAt;
     }

@@ -1,6 +1,7 @@
 package com.msa.order.service;
 
 import com.msa.common.event.OrderCreatedEvent;
+import com.msa.order.client.StockServiceClient;
 import com.msa.order.domain.Order;
 import com.msa.order.domain.OrderStatus;
 import com.msa.order.dto.CreateOrderRequest;
@@ -15,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -44,6 +46,10 @@ class OrderServiceTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    /** 목킹된 StockServiceClient. */
+    @Mock
+    private StockServiceClient stockServiceClient;
+
     /**
      * 주문 생성 성공 테스트.
      */
@@ -53,10 +59,15 @@ class OrderServiceTest {
         // given
         CreateOrderRequest request = new CreateOrderRequest(1L, 2);
 
+        StockServiceClient.StockInfo stockInfo = new StockServiceClient.StockInfo(1L, "노트북", BigDecimal.valueOf(1000000));
+        given(stockServiceClient.getStock(1L)).willReturn(stockInfo);
+
         Order savedOrder = Order.builder()
             .userId(1L)
             .productId(1L)
+            .productName("노트북")
             .quantity(2)
+            .totalAmount(BigDecimal.valueOf(2000000))
             .status(OrderStatus.PENDING)
             .createdAt(LocalDateTime.now())
             .build();
@@ -71,10 +82,28 @@ class OrderServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.id()).isEqualTo(1L);
         assertThat(response.userId()).isEqualTo(1L);
+        assertThat(response.productName()).isEqualTo("노트북");
+        assertThat(response.totalAmount()).isEqualByComparingTo(BigDecimal.valueOf(2000000));
         assertThat(response.status()).isEqualTo(OrderStatus.PENDING);
 
         then(orderRepository).should().save(any(Order.class));
         then(eventPublisher).should().publishEvent(any(OrderCreatedEvent.class));
+    }
+
+    /**
+     * 존재하지 않는 상품으로 주문 생성 시 예외 발생 테스트.
+     */
+    @Test
+    @DisplayName("createOrder: 존재하지 않는 상품 조회 시 NoSuchElementException 발생")
+    void createOrder_존재하지않는상품_예외발생() {
+        // given
+        given(stockServiceClient.getStock(999L))
+            .willThrow(new NoSuchElementException("상품을 찾을 수 없습니다. productId: 999"));
+
+        // when & then
+        assertThatThrownBy(() -> orderService.createOrder(new CreateOrderRequest(999L, 1), 1L))
+            .isInstanceOf(NoSuchElementException.class)
+            .hasMessageContaining("999");
     }
 
     /**
@@ -102,7 +131,9 @@ class OrderServiceTest {
         Order order = Order.builder()
             .userId(1L)
             .productId(1L)
+            .productName("노트북")
             .quantity(2)
+            .totalAmount(BigDecimal.valueOf(2000000))
             .status(OrderStatus.PENDING)
             .createdAt(LocalDateTime.now())
             .build();
@@ -128,7 +159,9 @@ class OrderServiceTest {
         Order order = Order.builder()
             .userId(1L)
             .productId(1L)
+            .productName("노트북")
             .quantity(2)
+            .totalAmount(BigDecimal.valueOf(2000000))
             .status(OrderStatus.PENDING)
             .createdAt(LocalDateTime.now())
             .build();

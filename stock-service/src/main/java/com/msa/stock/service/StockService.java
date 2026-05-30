@@ -12,7 +12,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -82,8 +81,7 @@ public class StockService {
             stockReservationRepository.save(reservation);
             log.info("재고 예약 완료 - orderId: {}, productId: {}, quantity: {}", event.orderId(), event.productId(), event.quantity());
 
-            BigDecimal totalAmount = stock.getProduct().getPrice().multiply(BigDecimal.valueOf(event.quantity()));
-            StockReservedEvent reservedEvent = new StockReservedEvent(UUID.randomUUID(), event.orderId(), event.userId(), event.productId(), event.quantity(), totalAmount);
+            StockReservedEvent reservedEvent = new StockReservedEvent(UUID.randomUUID(), event.orderId(), event.userId(), event.productId(), event.quantity(), event.totalAmount());
             eventPublisher.publishEvent(reservedEvent);
 
         } catch (IllegalArgumentException e) {

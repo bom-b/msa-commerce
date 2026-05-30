@@ -91,20 +91,16 @@ export default function OrderDetailPage() {
                 <div className={styles.sectionBody}>
                     <div className={styles.fieldGrid}>
                         <div className={styles.field}>
-                            <span className={styles.fieldLabel}>주문 ID</span>
-                            <span className={styles.fieldValue}>{order.id}</span>
-                        </div>
-                        <div className={styles.field}>
-                            <span className={styles.fieldLabel}>주문자</span>
-                            <span className={styles.fieldValue}>{order.userId}</span>
-                        </div>
-                        <div className={styles.field}>
-                            <span className={styles.fieldLabel}>상품 ID</span>
-                            <span className={styles.fieldValue}>{order.productId}</span>
+                            <span className={styles.fieldLabel}>상품명</span>
+                            <span className={styles.fieldValue}>{order.productName}</span>
                         </div>
                         <div className={styles.field}>
                             <span className={styles.fieldLabel}>주문 수량</span>
                             <span className={styles.fieldValue}>{order.quantity.toLocaleString()}개</span>
+                        </div>
+                        <div className={styles.field}>
+                            <span className={styles.fieldLabel}>총 금액</span>
+                            <span className={styles.fieldValueLarge}>{formatAmount(order.totalAmount)}</span>
                         </div>
                         <div className={styles.field}>
                             <span className={styles.fieldLabel}>주문 일시</span>
@@ -161,10 +157,6 @@ export default function OrderDetailPage() {
                         <p className={styles.paymentPending}>결제 정보를 불러오는 중...</p>
                     ) : payment ? (
                         <div className={styles.fieldGrid}>
-                            <div className={styles.field}>
-                                <span className={styles.fieldLabel}>결제 ID</span>
-                                <span className={styles.fieldValue}>{payment.id}</span>
-                            </div>
                             <div className={styles.field}>
                                 <span className={styles.fieldLabel}>결제 금액</span>
                                 <span className={styles.fieldValueLarge}>{formatAmount(payment.amount)}</span>

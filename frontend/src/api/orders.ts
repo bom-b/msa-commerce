@@ -6,7 +6,9 @@ export interface Order {
     id: number
     userId: string
     productId: number
+    productName: string
     quantity: number
+    totalAmount: number
     status: OrderStatus
     failureReason?: string
     createdAt: string

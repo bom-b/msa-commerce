@@ -46,10 +46,8 @@ public class AuthServiceClient {
                 .toBodilessEntity();
         } catch (HttpClientErrorException e) {
             String reason = extractMessage(e);
-            log.warn("예치금 차감 실패 - userId: {}, reason: {}", userId, reason);
             throw new IllegalArgumentException(reason);
         } catch (HttpServerErrorException e) {
-            log.error("Auth Service 오류 - userId: {}, status: {}", userId, e.getStatusCode());
             throw e;
         }
     }

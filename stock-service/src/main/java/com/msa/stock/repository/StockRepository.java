@@ -31,10 +31,10 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
     Optional<Stock> findByProductIdWithProduct(@Param("productId") Long productId);
 
     /**
-     * 전체 재고를 상품 정보와 함께 조회한다.
+     * 전체 재고를 상품 정보와 함께 상품 ID 오름차순으로 조회한다.
      *
      * @return Product가 로딩된 Stock 목록
      */
-    @Query("SELECT s FROM Stock s JOIN FETCH s.product")
+    @Query("SELECT s FROM Stock s JOIN FETCH s.product ORDER BY s.product.id ASC")
     List<Stock> findAllWithProduct();
 }

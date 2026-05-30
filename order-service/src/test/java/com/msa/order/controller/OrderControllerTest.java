@@ -1,6 +1,7 @@
 package com.msa.order.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.msa.order.client.StockServiceClient;
 import com.msa.order.domain.Order;
 import com.msa.order.domain.OrderStatus;
 import com.msa.order.dto.CreateOrderRequest;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -20,7 +22,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -76,6 +82,12 @@ class OrderControllerTest {
     private OrderRepository orderRepository;
 
     /**
+     * Stock Service REST 호출 Mock — 실제 Stock Service 없이 테스트 실행을 위해 등록한다.
+     */
+    @MockBean
+    private StockServiceClient stockServiceClient;
+
+    /**
      * Testcontainers 컨테이너 속성을 Spring 컨텍스트에 동적으로 등록한다.
      *
      * @param registry 동적 속성 레지스트리
@@ -109,6 +121,8 @@ class OrderControllerTest {
     void POST_orders_주문생성_성공() throws Exception {
         // given
         CreateOrderRequest request = new CreateOrderRequest(1L, 2);
+        given(stockServiceClient.getStock(anyLong()))
+            .willReturn(new StockServiceClient.StockInfo(1L, "노트북", BigDecimal.valueOf(1000000)));
 
         // when & then
         mockMvc
@@ -121,7 +135,9 @@ class OrderControllerTest {
             .andExpect(jsonPath("$.id", notNullValue()))
             .andExpect(jsonPath("$.userId", is(1)))
             .andExpect(jsonPath("$.productId", is(1)))
+            .andExpect(jsonPath("$.productName", is("노트북")))
             .andExpect(jsonPath("$.quantity", is(2)))
+            .andExpect(jsonPath("$.totalAmount", notNullValue()))
             .andExpect(jsonPath("$.status", is("PENDING")));
     }
 
@@ -159,7 +175,9 @@ class OrderControllerTest {
                 Order.builder()
                     .userId(1L)
                     .productId(1L)
+                    .productName("노트북")
                     .quantity(2)
+                    .totalAmount(new java.math.BigDecimal("2000000"))
                     .status(OrderStatus.PENDING)
                     .createdAt(LocalDateTime.now())
                     .build());

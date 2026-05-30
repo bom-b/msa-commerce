@@ -121,15 +121,16 @@ class StockServiceTest {
 
     /**
      * reserveStock() 호출 시 재고가 충분하면 예약을 생성하고 stock.reserved 이벤트를 발행하는지 검증한다.
-     * totalAmount가 product.price × quantity로 올바르게 계산되는지도 검증한다.
+     * totalAmount는 OrderCreatedEvent에서 그대로 전달되는지 검증한다.
      */
     @Test
-    @DisplayName("reserveStock: 재고 충분 시 예약 생성 및 stock.reserved 이벤트 발행, totalAmount 계산 검증")
+    @DisplayName("reserveStock: 재고 충분 시 예약 생성 및 stock.reserved 이벤트 발행, totalAmount 전달 검증")
     void reserveStock_재고충분_이벤트발행() {
         // given
         Product product = Product.builder().id(10L).productName("노트북").price(BigDecimal.valueOf(1000000)).build();
         Stock stock = Stock.builder().id(1L).product(product).totalQuantity(100).availableQuantity(5).build();
-        OrderCreatedEvent event = new OrderCreatedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2);
+        BigDecimal totalAmount = new BigDecimal("2000000");
+        OrderCreatedEvent event = new OrderCreatedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, totalAmount);
 
         given(stockRepository.findByProductIdWithProduct(10L)).willReturn(Optional.of(stock));
         given(stockReservationRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
@@ -146,7 +147,7 @@ class StockServiceTest {
         assertThat(published.userId()).isEqualTo(1L);
         assertThat(published.productId()).isEqualTo(10L);
         assertThat(published.quantity()).isEqualTo(2);
-        assertThat(published.totalAmount()).isEqualByComparingTo(new BigDecimal("2000000"));
+        assertThat(published.totalAmount()).isEqualByComparingTo(totalAmount);
         assertThat(stock.getAvailableQuantity()).isEqualTo(3); // 5 - 2
     }
 
@@ -159,7 +160,7 @@ class StockServiceTest {
         // given
         Product product = Product.builder().id(10L).productName("노트북").price(BigDecimal.valueOf(1000000)).build();
         Stock stock = Stock.builder().id(1L).product(product).totalQuantity(100).availableQuantity(1).build();
-        OrderCreatedEvent event = new OrderCreatedEvent(UUID.randomUUID(), 1L, 1L, 10L, 5);
+        OrderCreatedEvent event = new OrderCreatedEvent(UUID.randomUUID(), 1L, 1L, 10L, 5, new BigDecimal("5000000"));
 
         given(stockRepository.findByProductIdWithProduct(10L)).willReturn(Optional.of(stock));
 
