@@ -12,7 +12,6 @@ import LogoutIcon from '../assets/icon/logout.svg?react'
 import styles from './Layout.module.scss'
 
 const NAV_ITEMS = [
-    { path: '/about', label: '프로젝트 소개', Icon: InfoIcon },
     { path: '/', label: '상품 목록', Icon: PackageIcon },
     { path: '/inventory', label: '재고 관리', Icon: InventoryIcon },
 ]
@@ -115,17 +114,26 @@ export default function Layout() {
 
             <div className={styles.body}>
                 <aside className={styles.sidebar}>
-                    <p className={styles.navSection}>메뉴</p>
-                    {NAV_ITEMS.map(({ path, label, Icon }) => (
-                        <button
-                            key={path}
-                            className={`${styles.navItem} ${isActive(path) ? styles.active : ''}`}
-                            onClick={() => navigate(path)}
-                        >
-                            <Icon width={18} height={18} />
-                            {label}
-                        </button>
-                    ))}
+                    <div className={styles.navSectionWrapper}>
+                        <p className={styles.navSection}>메뉴</p>
+                        {NAV_ITEMS.map(({ path, label, Icon }) => (
+                            <button
+                                key={path}
+                                className={`${styles.navItem} ${isActive(path) ? styles.active : ''}`}
+                                onClick={() => navigate(path)}
+                            >
+                                <Icon width={18} height={18} />
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        className={`${styles.navItem} ${isActive('/about') ? styles.active : ''}`}
+                        onClick={() => navigate('/about')}
+                    >
+                        <InfoIcon width={18} height={18} />
+                        프로젝트 소개
+                    </button>
                 </aside>
 
                 <main className={styles.main}>

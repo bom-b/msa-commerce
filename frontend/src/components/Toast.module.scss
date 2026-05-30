@@ -1,0 +1,73 @@
+@use '../styles/variables' as v;
+@use '../styles/mixins' as m;
+
+.toast {
+    position: fixed;
+    top: v.$space-6;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+
+    @include m.flex-start;
+    gap: v.$space-3;
+
+    min-width: 320px;
+    max-width: 520px;
+    padding: v.$space-3 v.$space-5;
+
+    background: v.$color-primary;
+    color: v.$color-bg;
+    border-radius: v.$radius-md;
+    box-shadow: v.$shadow-lg;
+
+    animation: slideDown v.$transition-base forwards;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.message {
+    flex: 1;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    line-height: 1.5;
+}
+
+.linkBtn {
+    @include m.button-reset;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    color: v.$color-bg;
+    text-decoration: underline;
+    white-space: nowrap;
+    opacity: 0.9;
+    transition: opacity v.$transition-fast;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.closeBtn {
+    @include m.button-reset;
+    @include m.flex-center;
+    width: 20px;
+    height: 20px;
+    font-size: v.$font-size-xs;
+    color: v.$color-bg;
+    opacity: 0.6;
+    transition: opacity v.$transition-fast;
+    flex-shrink: 0;
+
+    &:hover {
+        opacity: 1;
+    }
+}

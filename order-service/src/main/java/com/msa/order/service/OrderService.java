@@ -5,11 +5,16 @@ import com.msa.order.domain.Order;
 import com.msa.order.domain.OrderStatus;
 import com.msa.order.dto.CreateOrderRequest;
 import com.msa.order.dto.OrderResponse;
+import com.msa.order.dto.PageResponse;
 import com.msa.common.event.OrderCreatedEvent;
 import com.msa.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,15 +87,26 @@ public class OrderService {
         return OrderResponse.from(order);
     }
 
+    /** 페이지당 최대 조회 가능 건수. */
+    private static final int MAX_PAGE_SIZE = 100;
+
     /**
-     * 특정 사용자의 주문 목록을 조회한다.
+     * 특정 사용자의 주문 목록을 페이지네이션하여 조회한다.
      *
      * @param userId 조회할 사용자 ID
-     * @return 해당 사용자의 주문 응답 DTO 목록
+     * @param page   0-based 페이지 번호
+     * @param size   페이지당 데이터 수 (최대 {@value MAX_PAGE_SIZE})
+     * @return 페이지네이션된 주문 응답 DTO
+     * @throws IllegalArgumentException size가 1 미만이거나 최대값 초과 시
      */
     @Transactional(readOnly = true)
-    public List<OrderResponse> getAllOrdersByUserId(Long userId) {
-        return orderRepository.findAllByUserId(userId).stream().map(OrderResponse::from).toList();
+    public PageResponse<OrderResponse> getAllOrdersByUserId(Long userId, int page, int size) {
+        if (size < 1 || size > MAX_PAGE_SIZE) {
+            throw new IllegalArgumentException("size는 1 이상 " + MAX_PAGE_SIZE + " 이하여야 합니다.");
+        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<OrderResponse> result = orderRepository.findAllByUserId(userId, pageable).map(OrderResponse::from);
+        return PageResponse.from(result);
     }
 
     /**

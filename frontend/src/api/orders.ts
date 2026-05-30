@@ -14,6 +14,16 @@ export interface Order {
     createdAt: string
 }
 
+export interface PageResponse<T> {
+    content: T[]
+    totalElements: number
+    totalPages: number
+    pageNumber: number
+    pageSize: number
+    first: boolean
+    last: boolean
+}
+
 export interface CreateOrderRequest {
     productId: number
     quantity: number
@@ -24,8 +34,8 @@ export async function createOrder(data: CreateOrderRequest): Promise<Order> {
     return response.data
 }
 
-export async function getOrders(): Promise<Order[]> {
-    const response = await client.get<Order[]>('/orders')
+export async function getOrders(page = 0, size = 10): Promise<PageResponse<Order>> {
+    const response = await client.get<PageResponse<Order>>('/orders', { params: { page, size } })
     return response.data
 }
 

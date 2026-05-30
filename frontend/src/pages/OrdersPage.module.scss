@@ -35,7 +35,7 @@
     @extend .stateBox;
     color: v.$color-error;
     background: v.$color-error-bg;
-    border-color: #e8b4b0;
+    border-color: v.$color-error-border;
 }
 
 .emptyBox {
@@ -62,7 +62,7 @@
 
     &:hover {
         box-shadow: v.$shadow-md;
-        border-color: #ccc;
+        border-color: v.$color-border-hover;
     }
 }
 
@@ -118,5 +118,64 @@
 
 .viewDetail {
     font-size: v.$font-size-xs;
+    color: v.$color-text-secondary;
+}
+
+// 페이지네이션
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: v.$space-6;
+    margin-top: v.$space-8;
+    padding-top: v.$space-6;
+    border-top: 1px solid v.$color-border;
+}
+
+.pageBtn {
+    display: inline-flex;
+    align-items: center;
+    padding: v.$space-2 v.$space-4;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    color: v.$color-text;
+    background: v.$color-bg;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-sm;
+    cursor: pointer;
+    transition: background v.$transition-fast, border-color v.$transition-fast;
+
+    &:hover:not(:disabled) {
+        background: v.$color-hover-bg;
+        border-color: v.$color-border-hover;
+    }
+
+    &:disabled {
+        color: v.$color-text-secondary;
+        background: v.$color-hover-bg;
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+}
+
+.pageInfo {
+    display: flex;
+    align-items: center;
+    gap: v.$space-1;
+    font-size: v.$font-size-sm;
+    color: v.$color-text-secondary;
+}
+
+.pageCurrentNum {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-primary;
+}
+
+.pageSeparator {
+    color: v.$color-border;
+}
+
+.pageTotalNum {
     color: v.$color-text-secondary;
 }

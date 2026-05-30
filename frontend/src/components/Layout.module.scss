@@ -194,6 +194,14 @@
     border-right: 1px solid v.$color-border;
     padding: v.$space-4 0;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.navSectionWrapper {
+    display: flex;
+    flex-direction: column;
 }
 
 .navSection {

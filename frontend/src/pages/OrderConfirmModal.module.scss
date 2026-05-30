@@ -1,0 +1,101 @@
+@use '../styles/variables' as v;
+@use '../styles/mixins' as m;
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: rgba(0, 0, 0, 0.4);
+    @include m.flex-center;
+    animation: fadeIn v.$transition-fast forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.modal {
+    @include m.card;
+    width: 100%;
+    max-width: 400px;
+    padding: v.$space-8;
+    box-shadow: v.$shadow-lg;
+    animation: slideUp v.$transition-base forwards;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.title {
+    font-size: v.$font-size-xl;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-primary;
+    margin-bottom: v.$space-6;
+}
+
+.infoList {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+    margin-bottom: v.$space-8;
+}
+
+.infoRow {
+    @include m.flex-between;
+}
+
+.infoLabel {
+    font-size: v.$font-size-sm;
+    color: v.$color-text-secondary;
+}
+
+.infoValue {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    color: v.$color-text;
+}
+
+.divider {
+    height: 1px;
+    background: v.$color-border;
+    margin: v.$space-1 0;
+}
+
+.totalLabel {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-text;
+}
+
+.totalValue {
+    font-size: v.$font-size-lg;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-primary;
+}
+
+.actions {
+    @include m.flex-start;
+    gap: v.$space-3;
+    justify-content: flex-end;
+}
+
+.cancelBtn {
+    @include m.btn-secondary;
+    padding: v.$space-2 v.$space-6;
+    font-size: v.$font-size-sm;
+}
+
+.confirmBtn {
+    @include m.btn-primary;
+    padding: v.$space-2 v.$space-6;
+    font-size: v.$font-size-sm;
+}

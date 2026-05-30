@@ -193,20 +193,3 @@
     padding: v.$space-2 v.$space-4;
     font-size: v.$font-size-sm;
 }
-
-.successMsg {
-    margin-top: v.$space-2;
-    padding: v.$space-2 v.$space-3;
-    background: v.$color-success-bg;
-    border-radius: v.$radius-sm;
-    font-size: v.$font-size-sm;
-    color: v.$color-success;
-}
-
-.inlineTextBtn {
-    @include m.button-reset;
-    color: inherit;
-    text-decoration: underline;
-    font-size: inherit;
-    cursor: pointer;
-}
