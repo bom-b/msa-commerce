@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -18,82 +17,68 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order {
 
-    /**
-     * 주문 고유 식별자 (자동 생성).
-     */
+    /** 주문 고유 식별자 (자동 생성). */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * 주문을 생성한 사용자 ID.
-     */
+    /** 주문을 생성한 사용자 ID. */
     @Column(nullable = false)
     private Long userId;
 
-    /**
-     * 주문한 상품 ID.
-     */
+    /** 주문한 상품 ID. */
     @Column(nullable = false)
     private Long productId;
 
-    /**
-     * 주문 수량.
-     */
+    /** 주문 수량. */
     @Column(nullable = false)
     private int quantity;
 
-    /**
-     * 주문 상태 (PENDING, COMPLETED, CANCELLED).
-     */
+    /** 주문 상태 (PENDING, COMPLETED, CANCELLED). */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;
 
-    /**
-     * 주문 총 금액.
-     */
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal totalAmount;
-
-    /**
-     * 주문 생성 일시.
-     */
+    /** 주문 생성 일시. */
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    /** 주문 실패 사유. CANCELLED 상태일 때 설정된다. */
+    @Column
+    private String failureReason;
 
     /**
      * 주문 엔티티 생성자 (빌더 전용).
      *
-     * @param userId      주문자 ID
-     * @param productId   상품 ID
-     * @param quantity    주문 수량
-     * @param status      주문 상태
-     * @param totalAmount 총 금액
-     * @param createdAt   생성 일시
+     * @param userId    주문자 ID
+     * @param productId 상품 ID
+     * @param quantity  주문 수량
+     * @param status    주문 상태
+     * @param createdAt 생성 일시
      */
     @Builder
-    private Order(
-        Long userId,
-        Long productId,
-        int quantity,
-        OrderStatus status,
-        BigDecimal totalAmount,
-        LocalDateTime createdAt) {
+    private Order(Long userId, Long productId, int quantity, OrderStatus status, LocalDateTime createdAt) {
         this.userId = userId;
         this.productId = productId;
         this.quantity = quantity;
         this.status = status;
-        this.totalAmount = totalAmount;
         this.createdAt = createdAt;
     }
 
     /**
-     * 주문 상태를 변경한다.
-     *
-     * @param status 변경할 주문 상태
+     * 주문 상태를 COMPLETED로 전이한다.
      */
-    public void updateStatus(OrderStatus status) {
-        this.status = status;
+    public void complete() {
+        this.status = OrderStatus.COMPLETED;
+    }
+
+    /**
+     * 주문 상태를 CANCELLED로 전이하고 실패 사유를 기록한다.
+     *
+     * @param reason 취소 사유
+     */
+    public void cancel(String reason) {
+        this.status = OrderStatus.CANCELLED;
+        this.failureReason = reason;
     }
 }

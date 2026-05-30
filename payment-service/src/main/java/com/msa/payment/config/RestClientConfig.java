@@ -1,4 +1,4 @@
-package com.msa.order.config;
+package com.msa.payment.config;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,22 +12,20 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class RestClientConfig {
 
-    /**
-     * 재고 서비스 URL.
-     */
-    @Value("${stock-service.url}")
-    private String stockServiceUrl;
+    /** Auth Service 기본 URL. */
+    @Value("${auth-service.url}")
+    private String authServiceUrl;
 
     /**
-     * stockRestClient Bean을 생성한다.
+     * Auth Service용 RestClient 빈을 생성한다.
      *
-     * @return stockRestClient 인스턴스
+     * @return authRestClient 인스턴스
      */
     @Bean
-    @Qualifier("stockRestClient")
-    public RestClient stockRestClient() {
+    @Qualifier("authRestClient")
+    public RestClient authRestClient() {
         return RestClient.builder()
-            .baseUrl(stockServiceUrl)
+            .baseUrl(authServiceUrl)
             .build();
     }
 }

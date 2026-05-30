@@ -20,7 +20,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.is;
@@ -109,7 +108,7 @@ class OrderControllerTest {
     @DisplayName("POST /orders: 주문 생성 성공 시 201 응답 및 orderId 반환")
     void POST_orders_주문생성_성공() throws Exception {
         // given
-        CreateOrderRequest request = new CreateOrderRequest(1L, 2, new BigDecimal("20000.00"));
+        CreateOrderRequest request = new CreateOrderRequest(1L, 2);
 
         // when & then
         mockMvc
@@ -135,7 +134,7 @@ class OrderControllerTest {
     @DisplayName("POST /orders: X-User-Id 헤더 누락 시 401 응답")
     void POST_orders_XUserId헤더_누락_401() throws Exception {
         // given
-        CreateOrderRequest request = new CreateOrderRequest(1L, 2, new BigDecimal("20000.00"));
+        CreateOrderRequest request = new CreateOrderRequest(1L, 2);
 
         // when & then
         mockMvc
@@ -162,7 +161,6 @@ class OrderControllerTest {
                     .productId(1L)
                     .quantity(2)
                     .status(OrderStatus.PENDING)
-                    .totalAmount(new BigDecimal("20000.00"))
                     .createdAt(LocalDateTime.now())
                     .build());
 

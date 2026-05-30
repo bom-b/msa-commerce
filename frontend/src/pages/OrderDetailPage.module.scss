@@ -40,7 +40,7 @@
     @extend .stateBox;
     color: v.$color-error;
     background: v.$color-error-bg;
-    border-color: #e8b4b0;
+    border-color: v.$color-error-border;
 }
 
 // 섹션 카드
@@ -99,6 +99,30 @@
     @extend .fieldValue;
     font-size: v.$font-size-lg;
     font-weight: v.$font-weight-bold;
+}
+
+// 취소 사유
+.failureReason {
+    display: flex;
+    align-items: baseline;
+    gap: v.$space-2;
+    margin-top: v.$space-4;
+    padding: v.$space-3 v.$space-4;
+    background: v.$color-error-bg;
+    border: 1px solid v.$color-error-border;
+    border-radius: v.$radius-sm;
+}
+
+.failureReasonLabel {
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-error;
+    white-space: nowrap;
+}
+
+.failureReasonValue {
+    font-size: v.$font-size-sm;
+    color: v.$color-error;
 }
 
 // 결제 없음 안내

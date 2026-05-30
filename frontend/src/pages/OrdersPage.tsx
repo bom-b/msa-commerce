@@ -14,10 +14,6 @@ function formatDate(iso: string) {
     })
 }
 
-function formatAmount(amount: number) {
-    return amount.toLocaleString('ko-KR') + '원'
-}
-
 export default function OrdersPage() {
     const navigate = useNavigate()
     const { data: orders, isLoading, isError } = useQuery<Order[]>({
@@ -81,10 +77,6 @@ export default function OrdersPage() {
                                 <div className={styles.metaItem}>
                                     <span className={styles.metaLabel}>수량</span>
                                     <span className={styles.metaValue}>{order.quantity.toLocaleString()}개</span>
-                                </div>
-                                <div className={styles.metaItem}>
-                                    <span className={styles.metaLabel}>총 금액</span>
-                                    <span className={styles.metaValue}>{formatAmount(order.totalAmount)}</span>
                                 </div>
                                 <div className={styles.metaItem}>
                                     <span className={styles.metaLabel}>주문자</span>

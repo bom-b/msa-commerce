@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
 
 /**
  * 결제 관련 Kafka 이벤트 발행자.
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PaymentEventProducer {
 
-    /** Kafka 메시지 발행 템플릿. */
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     /**
@@ -24,17 +25,10 @@ public class PaymentEventProducer {
      *
      * @param event 발행할 결제 완료 이벤트
      */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void sendPaymentCompleted(PaymentCompletedEvent event) {
-        log.info("결제 완료 이벤트 발행 - orderId: {}, eventId: {}", event.orderId(), event.eventId());
-        kafkaTemplate
-            .send(KafkaTopics.PAYMENT_COMPLETED, String.valueOf(event.orderId()), event)
-            .whenComplete((result, ex) -> {
-                if (ex != null) {
-                    log.error("결제 완료 이벤트 발행 실패 - orderId: {}, error: {}", event.orderId(), ex.getMessage());
-                } else {
-                    log.info("결제 완료 이벤트 발행 성공 - orderId: {}, offset: {}", event.orderId(), result.getRecordMetadata().offset());
-                }
-            });
+        log.info("결제 완료 이벤트 발행 - orderId: {}", event.orderId());
+        kafkaTemplate.send(KafkaTopics.PAYMENT_COMPLETED, String.valueOf(event.orderId()), event);
     }
 
     /**
@@ -42,16 +36,9 @@ public class PaymentEventProducer {
      *
      * @param event 발행할 결제 실패 이벤트
      */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void sendPaymentFailed(PaymentFailedEvent event) {
-        log.info("결제 실패 이벤트 발행 - orderId: {}, reason: {}, eventId: {}", event.orderId(), event.reason(), event.eventId());
-        kafkaTemplate
-            .send(KafkaTopics.PAYMENT_FAILED, String.valueOf(event.orderId()), event)
-            .whenComplete((result, ex) -> {
-                if (ex != null) {
-                    log.error("결제 실패 이벤트 발행 실패 - orderId: {}, error: {}", event.orderId(), ex.getMessage());
-                } else {
-                    log.info("결제 실패 이벤트 발행 성공 - orderId: {}, offset: {}", event.orderId(), result.getRecordMetadata().offset());
-                }
-            });
+        log.info("결제 실패 이벤트 발행 - orderId: {}, reason: {}", event.orderId(), event.reason());
+        kafkaTemplate.send(KafkaTopics.PAYMENT_FAILED, String.valueOf(event.orderId()), event);
     }
 }

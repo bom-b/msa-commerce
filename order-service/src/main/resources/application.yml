@@ -30,9 +30,6 @@ spring:
 server:
   port: ${SERVER_PORT:8082}
 
-stock-service:
-  url: ${STOCK_SERVICE_URL:http://localhost:8084}
-
 management:
   endpoints:
     web:

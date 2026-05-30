@@ -8,7 +8,7 @@ export interface Order {
     productId: number
     quantity: number
     status: OrderStatus
-    totalAmount: number
+    failureReason?: string
     createdAt: string
 }
 

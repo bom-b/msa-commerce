@@ -90,6 +90,21 @@ public class AuthService {
     }
 
     /**
+     * 사용자 예치금을 차감한다.
+     *
+     * @param userId 차감할 사용자 ID
+     * @param amount 차감 금액 (양수)
+     * @throws NoSuchElementException   예치금 정보가 존재하지 않는 경우
+     * @throws IllegalArgumentException 잔액이 부족한 경우
+     */
+    @Transactional
+    public void deduct(Long userId, BigDecimal amount) {
+        UserBalance balance = userBalanceRepository.findByUser_Id(userId)
+            .orElseThrow(() -> new NoSuchElementException("예치금 정보를 찾을 수 없습니다. userId=" + userId));
+        balance.deduct(amount);
+    }
+
+    /**
      * 사용자 ID를 subject로 하는 서명된 JWT를 생성한다.
      *
      * @param userIdx JWT의 subject로 설정할 사용자 ID

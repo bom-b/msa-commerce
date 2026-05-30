@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 결제 JPA 엔티티. order.created 이벤트 수신 시 생성되며, 항상 COMPLETED 상태로 저장된다.
+ * 결제 JPA 엔티티.
  */
 @Entity
 @Table(name = "payments")

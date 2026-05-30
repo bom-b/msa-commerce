@@ -34,7 +34,7 @@ public record StockResponse(
                 stock.getId(),
                 stock.getProduct().getId(),
                 stock.getProduct().getProductName(),
-                stock.getQuantity(),
+                stock.getAvailableQuantity(),
                 stock.getProduct().getImageName(),
                 stock.getProduct().getPrice()
         );

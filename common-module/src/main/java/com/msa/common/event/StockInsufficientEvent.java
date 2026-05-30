@@ -14,5 +14,10 @@ import java.util.UUID;
  * @param reason    재고 부족 사유
  */
 public record StockInsufficientEvent(
-    UUID eventId, Long orderId, Long productId, int quantity, String reason) {
+    UUID eventId,
+    Long orderId,
+    Long productId,
+    int quantity,
+    String reason
+) {
 }

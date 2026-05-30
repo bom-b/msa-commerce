@@ -83,27 +83,29 @@ msa-commerce/
            └─→ [Stock Service :8084]  (재고 조회)
 
 Kafka Choreography-based Saga:
-Order → [order.created] → Payment → [payment.completed] → Stock → [stock.reserved] → Order(COMPLETED)
-                                  → [payment.failed]   → Order(CANCELLED)
-                                                        → [stock.insufficient] → Payment(REFUND) → Order(CANCELLED)
+Order → [order.created] → Stock → [stock.reserved]     → Payment → [payment.completed] → Order(COMPLETED)
+                                                                                        → Stock(CONFIRMED)
+                               → [stock.insufficient] → Order(CANCELLED)
+                        Payment → [payment.failed]    → Order(CANCELLED)
+                                                      → Stock(RELEASE)
 ```
 
 ### Kafka 토픽 목록
 
-| 토픽명                  | 발행자             | 구독자             | 설명                 |
-|----------------------|-----------------|-----------------|--------------------|
-| `order.created`      | Order Service   | Payment Service | 주문 생성, 결제 요청 트리거   |
-| `payment.completed`  | Payment Service | Stock Service   | 결제 완료, 재고 차감 트리거   |
-| `payment.failed`     | Payment Service | Order Service   | 결제 실패, 주문 취소       |
-| `stock.reserved`     | Stock Service   | Order Service   | 재고 확보 완료, 주문 완료 처리 |
-| `stock.insufficient` | Stock Service   | Payment Service | 재고 부족, 결제 환불 트리거   |
+| 토픽명                  | 발행자             | 구독자                       | 설명                      |
+|----------------------|-----------------|-----------------------------|-------------------------|
+| `order.created`      | Order Service   | Stock Service               | 주문 생성, 재고 예약 트리거        |
+| `stock.reserved`     | Stock Service   | Payment Service             | 재고 확보 완료, 결제 처리 트리거     |
+| `stock.insufficient` | Stock Service   | Order Service               | 재고 부족, 주문 취소            |
+| `payment.completed`  | Payment Service | Order Service, Stock Service | 결제 완료, 주문 완료 + 재고 확정 트리거 |
+| `payment.failed`     | Payment Service | Order Service, Stock Service | 결제 실패, 주문 취소 + 재고 복구 트리거 |
 
 ### 주문 상태 전이
 
 ```
-PENDING → (payment.completed + stock.reserved) → COMPLETED
-        → (payment.failed)                      → CANCELLED
-        → (stock.insufficient)                  → CANCELLED
+PENDING → (payment.completed) → COMPLETED
+        → (payment.failed)    → CANCELLED
+        → (stock.insufficient) → CANCELLED
 ```
 
 ---
@@ -112,11 +114,15 @@ PENDING → (payment.completed + stock.reserved) → COMPLETED
 
 ### 1. Auth Service (:8081)
 
-- **역할**: JWT 토큰 발급기 (단순화)
-- **인증**: id=`test` / pw=`test` 하드코딩
-- **엔드포인트**: `POST /auth/login` → `{ token: "JWT..." }`
-- **JWT**: 만료시간 1시간, HS256 알고리즘
-- **DB 불필요**
+- **역할**: JWT 발급 + 사용자 예치금 관리
+- **인증**: DB 기반 (`users` 테이블), 초기 데이터: id=`test` / pw=`test`
+- **엔드포인트**:
+    - `POST /auth/login` → `{ token: "JWT..." }`
+    - `GET /auth/balance` — 내 예치금 잔액 조회
+    - `POST /auth/balance/charge` — 예치금 충전
+    - `POST /auth/balance/deduct` — 예치금 차감 (Payment Service 전용)
+- **JWT**: 만료시간 2시간, HS256 알고리즘
+- **DB**: `auth_db` (PostgreSQL) — `users`, `user_balances` 테이블
 
 ### 2. API Gateway (:8080)
 
@@ -128,27 +134,28 @@ PENDING → (payment.completed + stock.reserved) → COMPLETED
 ### 3. Order Service (:8082)
 
 - **DB**: `order_db` (PostgreSQL)
-- **엔티티**: `Order` (id, userId, productId, quantity, status, totalAmount, createdAt)
+- **엔티티**: `Order` (id, userId, productId, quantity, status, failureReason, createdAt)
 - **엔드포인트**:
     - `POST /orders` — 주문 생성 (Kafka: order.created 발행)
     - `GET /orders/{id}` — 주문 조회
     - `GET /orders` — 내 주문 목록
-- **Kafka 구독**: `payment.failed`, `stock.reserved`, `stock.insufficient`
+- **Kafka 구독**: `payment.completed`, `payment.failed`, `stock.insufficient`
 
 ### 4. Payment Service (:8083)
 
 - **DB**: `payment_db` (PostgreSQL)
 - **엔티티**: `Payment` (id, orderId, amount, status, createdAt)
 - **엔드포인트**: `GET /payments/{orderId}` — 결제 조회
-- **Kafka 구독**: `order.created` → 결제 처리 (항상 성공 시뮬레이션)
+- **Kafka 구독**: `stock.reserved` → Auth Service REST 호출로 예치금 차감 → 성공/실패에 따라 이벤트 발행
 - **Kafka 발행**: `payment.completed`, `payment.failed`
+- **Auth Service 의존**: 예치금 차감을 위해 `POST /auth/balance/deduct` REST 호출
 
 ### 5. Stock Service (:8084)
 
 - **DB**: `stock_db` (PostgreSQL)
-- **엔티티**: `Stock` (id, productId, productName, quantity)
+- **엔티티**: `Stock` (id, productId, totalQuantity, availableQuantity), `StockReservation` (id, orderId, stock, reservedQuantity, status)
 - **엔드포인트**: `GET /stocks` — 재고 목록
-- **Kafka 구독**: `payment.completed` → 재고 차감
+- **Kafka 구독**: `order.created` → 재고 예약, `payment.completed` → 예약 확정, `payment.failed` → 예약 취소
 - **Kafka 발행**: `stock.reserved`, `stock.insufficient`
 - **초기 데이터**: 상품 3~5개, 각 재고 100개
 
@@ -185,7 +192,7 @@ services:
 
 단일 PostgreSQL 컨테이너 내 DB 분리:
 
-- `auth_db` (사용 안함, 향후 확장용)
+- `auth_db`
 - `order_db`
 - `payment_db`
 - `stock_db`
@@ -222,107 +229,11 @@ services:
 
 ---
 
-## 개발 순서 (Phase별)
-
-### Phase 1 — 인프라 기반 구축
-
-1. `docker-compose.dev.yml` 작성 (Kafka, Zookeeper, Postgres, Kafka UI)
-2. 각 서비스 Spring Boot 프로젝트 초기화 (Gradle)
-3. `docker-compose.yml` 전체 서비스 포함 버전 작성
-
-### Phase 2 — Auth Service + API Gateway
-
-1. Auth Service: JWT 발급 엔드포인트 구현
-2. API Gateway: 라우팅 + JWT 검증 필터 구현
-3. 통합 테스트: 로그인 → 토큰 발급 → Gateway 통과 확인
-
-### Phase 3 — Order Service (Kafka 발행)
-
-1. Order 엔티티 + Repository 구현
-2. POST /orders 엔드포인트 구현
-3. `order.created` 이벤트 Kafka 발행 구현
-4. 테스트: 주문 생성 → Kafka 메시지 발행 확인
-
-### Phase 4 — Payment Service (Kafka 구독/발행)
-
-1. Payment 엔티티 + Repository 구현
-2. `order.created` 구독 → 결제 처리 로직
-3. `payment.completed` / `payment.failed` 발행
-4. 테스트: Kafka 이벤트 흐름 검증
-
-### Phase 5 — Stock Service (Kafka 구독/발행)
-
-1. Stock 엔티티 + 초기 데이터
-2. `payment.completed` 구독 → 재고 차감 로직
-3. `stock.reserved` / `stock.insufficient` 발행
-4. Order Service에서 최종 상태 업데이트 구독 구현
-
-### Phase 6 — Frontend
-
-1. React 프로젝트 초기화 (Create React App 또는 Vite)
-2. 로그인 페이지 → JWT 저장
-3. 재고 목록 + 주문 폼
-4. 주문 목록 + 상태 표시
-
-### Phase 7 — CI/CD 구축
-
-1. GitHub Actions CI 워크플로우
-2. GitHub Actions CD 워크플로우
-3. 배포 서버 docker-compose 설정
-
-### Phase 8 — 테스트 보강
-
-1. 각 서비스 단위/통합 테스트
-2. Kafka Saga 흐름 통합 테스트 (Testcontainers)
-
----
-
-## Kafka 이벤트 페이로드 스펙
-
-### order.created
-
-```json
-{
-    "eventId": "uuid",
-    "orderId": "long",
-    "userId": "string",
-    "productId": "long",
-    "quantity": "int",
-    "totalAmount": "decimal"
-}
-```
-
-### payment.completed / payment.failed
-
-```json
-{
-    "eventId": "uuid",
-    "orderId": "long",
-    "paymentId": "long",
-    "amount": "decimal",
-    "reason": "string (failed 시)"
-}
-```
-
-### stock.reserved / stock.insufficient
-
-```json
-{
-    "eventId": "uuid",
-    "orderId": "long",
-    "productId": "long",
-    "quantity": "int",
-    "reason": "string (insufficient 시)"
-}
-```
-
----
-
 ## 주의사항 및 제약
 
 1. **Kubernetes 미사용** — Docker Compose로만 배포
 2. **Auth Service 단순화** — 회원가입 없음, test/test 고정
-3. **결제 시뮬레이션** — 실제 PG 연동 없음, 항상 성공 처리
+3. **실제 PG 연동 없음** — 예치금(UserBalance) 차감으로 결제 처리, 외부 카드사 연동 없음
 4. **기능 최소화** — Kafka + MSA 패턴 학습이 목적, CRUD는 최소한으로
 5. **각 서비스 독립 DB** — 서비스 간 DB 공유 절대 금지
-6. **동기 호출 최소화** — 서비스 간 직접 REST 호출 대신 Kafka 이벤트 사용
+6. **동기 호출 최소화** — 서비스 간 직접 REST 호출 대신 Kafka 이벤트 사용 (예외: Payment → Auth 예치금 차감)

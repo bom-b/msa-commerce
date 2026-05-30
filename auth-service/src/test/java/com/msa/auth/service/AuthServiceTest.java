@@ -169,6 +169,54 @@ class AuthServiceTest {
     }
 
     /**
+     * 잔액이 충분한 사용자에게 deduct 호출 시 정상 차감되어야 한다.
+     */
+    @Test
+    void deduct_withSufficientBalance_deductsAmount() {
+        User user = new User(1L, "test", "test");
+        UserBalance userBalance = UserBalance.builder()
+            .id(1L)
+            .user(user)
+            .balance(new BigDecimal("50000"))
+            .build();
+        when(userBalanceRepository.findByUser_Id(1L)).thenReturn(Optional.of(userBalance));
+
+        authService.deduct(1L, new BigDecimal("10000"));
+
+        assertThat(userBalance.getBalance()).isEqualByComparingTo(new BigDecimal("40000"));
+    }
+
+    /**
+     * 잔액이 부족한 경우 deduct 호출 시 {@link IllegalArgumentException}이 발생해야 한다.
+     */
+    @Test
+    void deduct_withInsufficientBalance_throwsIllegalArgumentException() {
+        User user = new User(1L, "test", "test");
+        UserBalance userBalance = UserBalance.builder()
+            .id(1L)
+            .user(user)
+            .balance(new BigDecimal("5000"))
+            .build();
+        when(userBalanceRepository.findByUser_Id(1L)).thenReturn(Optional.of(userBalance));
+
+        assertThatThrownBy(() -> authService.deduct(1L, new BigDecimal("10000")))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("잔액 부족");
+    }
+
+    /**
+     * 예치금 정보가 없는 사용자에게 deduct 호출 시 {@link NoSuchElementException}이 발생해야 한다.
+     */
+    @Test
+    void deduct_withNotFoundUserId_throwsNoSuchElementException() {
+        when(userBalanceRepository.findByUser_Id(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.deduct(99L, new BigDecimal("10000")))
+            .isInstanceOf(NoSuchElementException.class)
+            .hasMessageContaining("99");
+    }
+
+    /**
      * 테스트용 {@link LoginRequest} 객체를 생성하는 헬퍼 메서드.
      *
      * @param id       사용자 ID

@@ -8,10 +8,10 @@ ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('products_id_seq', (SELECT MAX(id) FROM products));
 
-INSERT INTO stocks (product_id, quantity)
-VALUES (1, 100),
-       (2, 100),
-       (3, 100),
-       (4, 100),
-       (5, 100)
+INSERT INTO stocks (product_id, total_quantity, available_quantity)
+VALUES (1, 100, 100),
+       (2, 100, 100),
+       (3, 100, 100),
+       (4, 100, 100),
+       (5, 100, 100)
 ON CONFLICT (product_id) DO NOTHING;

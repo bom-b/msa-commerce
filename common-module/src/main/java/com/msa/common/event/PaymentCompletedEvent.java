@@ -12,5 +12,10 @@ import java.util.UUID;
  * @param paymentId 결제 ID
  * @param amount    결제 금액
  */
-public record PaymentCompletedEvent(UUID eventId, Long orderId, Long paymentId, BigDecimal amount) {
+public record PaymentCompletedEvent(
+    UUID eventId,
+    Long orderId,
+    Long paymentId,
+    BigDecimal amount
+) {
 }

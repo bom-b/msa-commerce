@@ -3,6 +3,7 @@ package com.msa.auth.controller;
 import com.msa.auth.dto.BalanceResponse;
 import com.msa.auth.dto.LoginResponse;
 import com.msa.auth.service.AuthService;
+import org.mockito.Mockito;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -119,5 +120,47 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"amount\":0}"))
             .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * 유효한 요청으로 예치금 차감 시 {@code 204 No Content}가 반환되어야 한다.
+     */
+    @Test
+    void deduct_withValidRequest_returns204() throws Exception {
+        Mockito.doNothing().when(authService).deduct(eq(1L), any());
+
+        mockMvc.perform(post("/auth/balance/deduct")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"userId\":1,\"amount\":10000}"))
+            .andExpect(status().isNoContent());
+    }
+
+    /**
+     * 잔액 부족으로 차감 실패 시 {@code 400 Bad Request}가 반환되어야 한다.
+     */
+    @Test
+    void deduct_withInsufficientBalance_returns400() throws Exception {
+        Mockito.doThrow(new IllegalArgumentException("잔액 부족: 현재 잔액=5000, 요청=10000"))
+            .when(authService).deduct(eq(1L), any());
+
+        mockMvc.perform(post("/auth/balance/deduct")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"userId\":1,\"amount\":10000}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("잔액 부족: 현재 잔액=5000, 요청=10000"));
+    }
+
+    /**
+     * 존재하지 않는 사용자 ID로 차감 요청 시 {@code 404 Not Found}가 반환되어야 한다.
+     */
+    @Test
+    void deduct_withUnknownUserId_returns404() throws Exception {
+        Mockito.doThrow(new NoSuchElementException("예치금 정보를 찾을 수 없습니다. userId=99"))
+            .when(authService).deduct(eq(99L), any());
+
+        mockMvc.perform(post("/auth/balance/deduct")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"userId\":99,\"amount\":10000}"))
+            .andExpect(status().isNotFound());
     }
 }

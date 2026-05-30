@@ -24,8 +24,8 @@ function formatAmount(amount: number) {
 
 const SAGA_STEPS: { status: OrderStatus; label: string }[] = [
     { status: 'PENDING', label: '주문 생성' },
-    { status: 'COMPLETED', label: '결제 완료' },
     { status: 'COMPLETED', label: '재고 확보' },
+    { status: 'COMPLETED', label: '결제 완료' },
 ]
 
 export default function OrderDetailPage() {
@@ -107,22 +107,24 @@ export default function OrderDetailPage() {
                             <span className={styles.fieldValue}>{order.quantity.toLocaleString()}개</span>
                         </div>
                         <div className={styles.field}>
-                            <span className={styles.fieldLabel}>총 금액</span>
-                            <span className={styles.fieldValueLarge}>{formatAmount(order.totalAmount)}</span>
-                        </div>
-                        <div className={styles.field}>
                             <span className={styles.fieldLabel}>주문 일시</span>
                             <span className={styles.fieldValue}>{formatDate(order.createdAt)}</span>
                         </div>
                     </div>
+                    {isCancelled && order.failureReason && (
+                        <div className={styles.failureReason}>
+                            <span className={styles.failureReasonLabel}>취소 사유</span>
+                            <span className={styles.failureReasonValue}>{order.failureReason}</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Saga 진행 단계 표시 */}
                 <div className={styles.sagaFlow}>
                     {SAGA_STEPS.map((step, idx) => {
                         // idx 0: 주문 생성 — 주문이 존재하면 항상 완료
-                        // idx 1: 결제 완료 — COMPLETED 또는 CANCELLED (결제 처리가 진행됨)
-                        // idx 2: 재고 확보 — COMPLETED 상태일 때만 활성
+                        // idx 1: 재고 확보 — COMPLETED 또는 CANCELLED (재고 처리가 진행됨)
+                        // idx 2: 결제 완료 — COMPLETED 상태일 때만 활성
                         const isActive =
                             idx === 0 ||
                             (idx === 1 && (order.status === 'COMPLETED' || order.status === 'CANCELLED')) ||

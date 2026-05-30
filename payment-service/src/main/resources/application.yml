@@ -27,6 +27,9 @@ spring:
       properties:
         spring.json.trusted.packages: "com.msa.*"
 
+auth-service:
+  url: ${AUTH_SERVICE_URL:http://localhost:8081}
+
 server:
   port: ${SERVER_PORT:8083}
 

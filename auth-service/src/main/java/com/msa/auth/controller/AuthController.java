@@ -2,6 +2,7 @@ package com.msa.auth.controller;
 
 import com.msa.auth.dto.BalanceResponse;
 import com.msa.auth.dto.ChargeRequest;
+import com.msa.auth.dto.DeductRequest;
 import com.msa.auth.dto.LoginRequest;
 import com.msa.auth.dto.LoginResponse;
 import com.msa.auth.service.AuthService;
@@ -63,5 +64,17 @@ public class AuthController {
             @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody ChargeRequest request) {
         return ResponseEntity.ok(authService.charge(userId, request.amount()));
+    }
+
+    /**
+     * 예치금을 차감한다. Payment Service 내부 호출 전용 엔드포인트.
+     *
+     * @param request 차감할 사용자 ID와 금액
+     * @return {@code 204 No Content}
+     */
+    @PostMapping("/balance/deduct")
+    public ResponseEntity<Void> deduct(@Valid @RequestBody DeductRequest request) {
+        authService.deduct(request.userId(), request.amount());
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,13 +1,12 @@
 package com.msa.payment.service;
 
+import com.msa.common.event.PaymentCompletedEvent;
+import com.msa.common.event.PaymentFailedEvent;
+import com.msa.common.event.StockReservedEvent;
+import com.msa.payment.client.AuthServiceClient;
 import com.msa.payment.domain.Payment;
 import com.msa.payment.domain.PaymentStatus;
 import com.msa.payment.dto.PaymentResponse;
-import com.msa.common.event.OrderCreatedEvent;
-import com.msa.common.event.PaymentCompletedEvent;
-import com.msa.common.event.PaymentFailedEvent;
-import com.msa.common.event.StockInsufficientEvent;
-import com.msa.payment.kafka.producer.PaymentEventProducer;
 import com.msa.payment.repository.PaymentRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -30,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
 
 /**
@@ -47,20 +47,24 @@ class PaymentServiceTest {
     @Mock
     private PaymentRepository paymentRepository;
 
-    /** 목킹된 PaymentEventProducer. */
+    /** 목킹된 ApplicationEventPublisher. */
     @Mock
-    private PaymentEventProducer paymentEventProducer;
+    private ApplicationEventPublisher eventPublisher;
+
+    /** 목킹된 AuthServiceClient. */
+    @Mock
+    private AuthServiceClient authServiceClient;
 
     /**
-     * order.created 이벤트 수신 시 결제 생성 및 payment.completed 이벤트 발행 테스트.
-     * 트랜잭션 컨텍스트가 없는 단위 테스트에서는 Kafka 이벤트가 즉시 발행된다.
+     * stock.reserved 이벤트 수신 시 예치금 차감 후 결제 생성 및 payment.completed 이벤트 발행 테스트.
      */
     @Test
-    @DisplayName("processPayment: 정상 주문 이벤트 수신 시 결제 생성 및 completed 이벤트 발행")
+    @DisplayName("processPayment: 재고 확보 완료 이벤트 수신 시 결제 생성 및 completed 이벤트 발행")
     void processPayment_결제생성_및_이벤트발행() {
         // given
-        OrderCreatedEvent event = new OrderCreatedEvent(
-            UUID.randomUUID(), 1L, 1L, 10L, 2, new BigDecimal("20000.00"));
+        StockReservedEvent event = new StockReservedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, new BigDecimal("20000.00"));
+
+        given(paymentRepository.existsByOrderId(1L)).willReturn(false);
 
         Payment savedPayment = Payment.builder()
             .orderId(1L)
@@ -76,86 +80,72 @@ class PaymentServiceTest {
         paymentService.processPayment(event);
 
         // then
+        then(authServiceClient).should().deduct(1L, new BigDecimal("20000.00"));
         then(paymentRepository).should().saveAndFlush(any(Payment.class));
 
-        ArgumentCaptor<PaymentCompletedEvent> captor = ArgumentCaptor.forClass(PaymentCompletedEvent.class);
-        then(paymentEventProducer).should().sendPaymentCompleted(captor.capture());
-
-        PaymentCompletedEvent published = captor.getValue();
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        then(eventPublisher).should().publishEvent(captor.capture());
+        assertThat(captor.getValue()).isInstanceOf(PaymentCompletedEvent.class);
+        PaymentCompletedEvent published = (PaymentCompletedEvent) captor.getValue();
         assertThat(published.orderId()).isEqualTo(1L);
         assertThat(published.paymentId()).isEqualTo(100L);
         assertThat(published.amount()).isEqualByComparingTo(new BigDecimal("20000.00"));
     }
 
     /**
-     * 중복 orderId 삽입 시 DataIntegrityViolationException이 전파되어 소비자 계층에서 처리됨을 검증한다.
+     * 이미 처리된 orderId이면 결제 처리를 스킵하는 멱등성 테스트.
      */
     @Test
-    @DisplayName("processPayment: 중복 orderId 삽입 시 DataIntegrityViolationException 전파")
-    void processPayment_중복이벤트_DataIntegrityViolationException_전파() {
+    @DisplayName("processPayment: 이미 처리된 orderId이면 결제 처리를 스킵한다")
+    void processPayment_중복이벤트_스킵() {
         // given
-        OrderCreatedEvent event = new OrderCreatedEvent(
-            UUID.randomUUID(), 1L, 1L, 10L, 2, new BigDecimal("20000.00"));
-
-        given(paymentRepository.saveAndFlush(any(Payment.class))).willThrow(DataIntegrityViolationException.class);
-
-        // when & then
-        assertThatThrownBy(() -> paymentService.processPayment(event))
-            .isInstanceOf(DataIntegrityViolationException.class);
-        then(paymentEventProducer).should(never()).sendPaymentCompleted(any());
-    }
-
-    /**
-     * stock.insufficient 이벤트 수신 시 결제 REFUNDED 전이 및 payment.failed 이벤트 발행 테스트.
-     */
-    @Test
-    @DisplayName("processRefund: 재고 부족 이벤트 수신 시 결제 REFUNDED 전이 및 failed 이벤트 발행")
-    void processRefund_환불처리_및_이벤트발행() {
-        // given
-        StockInsufficientEvent event = new StockInsufficientEvent(
-            UUID.randomUUID(), 1L, 10L, 2, "재고 부족");
-
-        Payment payment = Payment.builder()
-            .orderId(1L)
-            .amount(new BigDecimal("20000.00"))
-            .status(PaymentStatus.COMPLETED)
-            .createdAt(LocalDateTime.now())
-            .build();
-        ReflectionTestUtils.setField(payment, "id", 100L);
-
-        given(paymentRepository.findByOrderId(1L)).willReturn(Optional.of(payment));
+        StockReservedEvent event = new StockReservedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, new BigDecimal("20000.00"));
+        given(paymentRepository.existsByOrderId(1L)).willReturn(true);
 
         // when
-        paymentService.processRefund(event);
+        paymentService.processPayment(event);
 
         // then
-        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
-
-        ArgumentCaptor<PaymentFailedEvent> captor = ArgumentCaptor.forClass(PaymentFailedEvent.class);
-        then(paymentEventProducer).should().sendPaymentFailed(captor.capture());
-
-        PaymentFailedEvent published = captor.getValue();
-        assertThat(published.orderId()).isEqualTo(1L);
-        assertThat(published.paymentId()).isEqualTo(100L);
-        assertThat(published.reason()).isEqualTo("재고 부족");
+        then(authServiceClient).should(never()).deduct(any(), any());
+        then(paymentRepository).should(never()).saveAndFlush(any());
+        then(eventPublisher).should(never()).publishEvent(any());
     }
 
     /**
-     * 환불 대상 결제가 없을 때 NoSuchElementException이 발생하는 테스트.
+     * 잔액 부족 시 Payment(FAILED) 저장 및 payment.failed 이벤트 발행 테스트.
      */
     @Test
-    @DisplayName("processRefund: 결제 레코드 없을 시 NoSuchElementException 발생")
-    void processRefund_결제없음_예외발생() {
+    @DisplayName("processPayment: 잔액 부족 시 Payment(FAILED) 저장 및 payment.failed 이벤트 발행")
+    void processPayment_잔액부족_실패처리() {
         // given
-        StockInsufficientEvent event = new StockInsufficientEvent(
-            UUID.randomUUID(), 999L, 10L, 2, "재고 부족");
+        StockReservedEvent event = new StockReservedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, new BigDecimal("20000.00"));
+        given(paymentRepository.existsByOrderId(1L)).willReturn(false);
+        willThrow(new IllegalArgumentException("잔액 부족: 현재 잔액=5000, 요청=20000.00"))
+            .given(authServiceClient).deduct(1L, new BigDecimal("20000.00"));
 
-        given(paymentRepository.findByOrderId(999L)).willReturn(Optional.empty());
+        Payment failedPayment = Payment.builder()
+            .orderId(1L)
+            .amount(new BigDecimal("20000.00"))
+            .status(PaymentStatus.FAILED)
+            .createdAt(LocalDateTime.now())
+            .build();
+        ReflectionTestUtils.setField(failedPayment, "id", 200L);
+        given(paymentRepository.saveAndFlush(any(Payment.class))).willReturn(failedPayment);
 
-        // when & then
-        assertThatThrownBy(() -> paymentService.processRefund(event))
-            .isInstanceOf(NoSuchElementException.class)
-            .hasMessageContaining("999");
+        // when
+        paymentService.processPayment(event);
+
+        // then
+        then(paymentRepository).should().saveAndFlush(any(Payment.class));
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        then(eventPublisher).should().publishEvent(captor.capture());
+        assertThat(captor.getValue()).isInstanceOf(PaymentFailedEvent.class);
+        PaymentFailedEvent published = (PaymentFailedEvent) captor.getValue();
+        assertThat(published.orderId()).isEqualTo(1L);
+        assertThat(published.paymentId()).isEqualTo(200L);
+        assertThat(published.amount()).isEqualByComparingTo(new BigDecimal("20000.00"));
+        assertThat(published.reason()).contains("잔액 부족");
     }
 
     /**

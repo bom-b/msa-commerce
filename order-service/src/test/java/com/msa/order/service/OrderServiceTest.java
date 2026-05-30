@@ -1,10 +1,10 @@
 package com.msa.order.service;
 
+import com.msa.common.event.OrderCreatedEvent;
 import com.msa.order.domain.Order;
 import com.msa.order.domain.OrderStatus;
 import com.msa.order.dto.CreateOrderRequest;
 import com.msa.order.dto.OrderResponse;
-import com.msa.order.kafka.producer.OrderEventProducer;
 import com.msa.order.repository.OrderRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,9 +12,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -32,23 +32,17 @@ import static org.mockito.BDDMockito.then;
 @DisplayName("OrderService 단위 테스트")
 class OrderServiceTest {
 
-    /**
-     * 테스트 대상 OrderService.
-     */
+    /** 테스트 대상 OrderService. */
     @InjectMocks
     private OrderService orderService;
 
-    /**
-     * 목킹된 OrderRepository.
-     */
+    /** 목킹된 OrderRepository. */
     @Mock
     private OrderRepository orderRepository;
 
-    /**
-     * 목킹된 OrderEventProducer.
-     */
+    /** 목킹된 ApplicationEventPublisher. */
     @Mock
-    private OrderEventProducer orderEventProducer;
+    private ApplicationEventPublisher eventPublisher;
 
     /**
      * 주문 생성 성공 테스트.
@@ -57,18 +51,15 @@ class OrderServiceTest {
     @DisplayName("createOrder: 주문 생성 성공 시 저장 및 이벤트 발행 호출 검증")
     void createOrder_주문생성_성공() {
         // given
-        CreateOrderRequest request = new CreateOrderRequest(1L, 2, new BigDecimal("20000.00"));
+        CreateOrderRequest request = new CreateOrderRequest(1L, 2);
 
-        Order savedOrder =
-            Order.builder()
-                .userId(1L)
-                .productId(1L)
-                .quantity(2)
-                .status(OrderStatus.PENDING)
-                .totalAmount(new BigDecimal("20000.00"))
-                .createdAt(LocalDateTime.now())
-                .build();
-        // 리플렉션으로 id 설정 (JPA 자동 생성 시뮬레이션)
+        Order savedOrder = Order.builder()
+            .userId(1L)
+            .productId(1L)
+            .quantity(2)
+            .status(OrderStatus.PENDING)
+            .createdAt(LocalDateTime.now())
+            .build();
         ReflectionTestUtils.setField(savedOrder, "id", 1L);
 
         given(orderRepository.save(any(Order.class))).willReturn(savedOrder);
@@ -83,7 +74,7 @@ class OrderServiceTest {
         assertThat(response.status()).isEqualTo(OrderStatus.PENDING);
 
         then(orderRepository).should().save(any(Order.class));
-        then(orderEventProducer).should().sendOrderCreated(any());
+        then(eventPublisher).should().publishEvent(any(OrderCreatedEvent.class));
     }
 
     /**
@@ -108,42 +99,39 @@ class OrderServiceTest {
     @DisplayName("cancelOrder: payment.failed 이벤트 처리 시 주문 상태 CANCELLED로 변경")
     void handlePaymentFailed_주문취소() {
         // given
-        Order order =
-            Order.builder()
-                .userId(1L)
-                .productId(1L)
-                .quantity(2)
-                .status(OrderStatus.PENDING)
-                .totalAmount(new BigDecimal("20000.00"))
-                .createdAt(LocalDateTime.now())
-                .build();
+        Order order = Order.builder()
+            .userId(1L)
+            .productId(1L)
+            .quantity(2)
+            .status(OrderStatus.PENDING)
+            .createdAt(LocalDateTime.now())
+            .build();
         ReflectionTestUtils.setField(order, "id", 1L);
 
         given(orderRepository.findById(1L)).willReturn(Optional.of(order));
 
         // when
-        orderService.cancelOrder(1L);
+        orderService.cancelOrder(1L, "결제 실패");
 
         // then
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        assertThat(order.getFailureReason()).isEqualTo("결제 실패");
     }
 
     /**
-     * stock.reserved 이벤트 처리 시 주문 완료 테스트.
+     * payment.completed 이벤트 처리 시 주문 완료 테스트.
      */
     @Test
-    @DisplayName("completeOrder: stock.reserved 이벤트 처리 시 주문 상태 COMPLETED로 변경")
-    void handleStockReserved_주문완료() {
+    @DisplayName("completeOrder: payment.completed 이벤트 처리 시 주문 상태 COMPLETED로 변경")
+    void handlePaymentCompleted_주문완료() {
         // given
-        Order order =
-            Order.builder()
-                .userId(1L)
-                .productId(1L)
-                .quantity(2)
-                .status(OrderStatus.PENDING)
-                .totalAmount(new BigDecimal("20000.00"))
-                .createdAt(LocalDateTime.now())
-                .build();
+        Order order = Order.builder()
+            .userId(1L)
+            .productId(1L)
+            .quantity(2)
+            .status(OrderStatus.PENDING)
+            .createdAt(LocalDateTime.now())
+            .build();
         ReflectionTestUtils.setField(order, "id", 1L);
 
         given(orderRepository.findById(1L)).willReturn(Optional.of(order));
