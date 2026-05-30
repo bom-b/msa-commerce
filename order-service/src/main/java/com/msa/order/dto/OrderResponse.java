@@ -3,7 +3,6 @@ package com.msa.order.dto;
 import com.msa.order.domain.Order;
 import com.msa.order.domain.OrderStatus;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -25,7 +24,7 @@ public record OrderResponse(
     Long productId,
     String productName,
     int quantity,
-    BigDecimal totalAmount,
+    Long totalAmount,
     OrderStatus status,
     LocalDateTime createdAt,
     String failureReason

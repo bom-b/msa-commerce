@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -62,13 +61,13 @@ class PaymentServiceTest {
     @DisplayName("processPayment: 재고 확보 완료 이벤트 수신 시 결제 생성 및 completed 이벤트 발행")
     void processPayment_결제생성_및_이벤트발행() {
         // given
-        StockReservedEvent event = new StockReservedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, new BigDecimal("20000.00"));
+        StockReservedEvent event = new StockReservedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, 20000L);
 
         given(paymentRepository.existsByOrderId(1L)).willReturn(false);
 
         Payment savedPayment = Payment.builder()
             .orderId(1L)
-            .amount(new BigDecimal("20000.00"))
+            .amount(20000L)
             .status(PaymentStatus.COMPLETED)
             .createdAt(LocalDateTime.now())
             .build();
@@ -80,7 +79,7 @@ class PaymentServiceTest {
         paymentService.processPayment(event);
 
         // then
-        then(authServiceClient).should().deduct(1L, new BigDecimal("20000.00"));
+        then(authServiceClient).should().deduct(1L, 20000L);
         then(paymentRepository).should().saveAndFlush(any(Payment.class));
 
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
@@ -89,7 +88,7 @@ class PaymentServiceTest {
         PaymentCompletedEvent published = (PaymentCompletedEvent) captor.getValue();
         assertThat(published.orderId()).isEqualTo(1L);
         assertThat(published.paymentId()).isEqualTo(100L);
-        assertThat(published.amount()).isEqualByComparingTo(new BigDecimal("20000.00"));
+        assertThat(published.amount()).isEqualTo(20000L);
     }
 
     /**
@@ -99,7 +98,7 @@ class PaymentServiceTest {
     @DisplayName("processPayment: 이미 처리된 orderId이면 결제 처리를 스킵한다")
     void processPayment_중복이벤트_스킵() {
         // given
-        StockReservedEvent event = new StockReservedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, new BigDecimal("20000.00"));
+        StockReservedEvent event = new StockReservedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, 20000L);
         given(paymentRepository.existsByOrderId(1L)).willReturn(true);
 
         // when
@@ -118,14 +117,14 @@ class PaymentServiceTest {
     @DisplayName("processPayment: 잔액 부족 시 Payment(FAILED) 저장 및 payment.failed 이벤트 발행")
     void processPayment_잔액부족_실패처리() {
         // given
-        StockReservedEvent event = new StockReservedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, new BigDecimal("20000.00"));
+        StockReservedEvent event = new StockReservedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, 20000L);
         given(paymentRepository.existsByOrderId(1L)).willReturn(false);
         willThrow(new IllegalArgumentException("잔액 부족: 현재 잔액=5000, 요청=20000.00"))
-            .given(authServiceClient).deduct(1L, new BigDecimal("20000.00"));
+            .given(authServiceClient).deduct(1L, 20000L);
 
         Payment failedPayment = Payment.builder()
             .orderId(1L)
-            .amount(new BigDecimal("20000.00"))
+            .amount(20000L)
             .status(PaymentStatus.FAILED)
             .createdAt(LocalDateTime.now())
             .build();
@@ -144,7 +143,7 @@ class PaymentServiceTest {
         PaymentFailedEvent published = (PaymentFailedEvent) captor.getValue();
         assertThat(published.orderId()).isEqualTo(1L);
         assertThat(published.paymentId()).isEqualTo(200L);
-        assertThat(published.amount()).isEqualByComparingTo(new BigDecimal("20000.00"));
+        assertThat(published.amount()).isEqualTo(20000L);
         assertThat(published.reason()).contains("잔액 부족");
     }
 
@@ -157,7 +156,7 @@ class PaymentServiceTest {
         // given
         Payment payment = Payment.builder()
             .orderId(1L)
-            .amount(new BigDecimal("20000.00"))
+            .amount(20000L)
             .status(PaymentStatus.COMPLETED)
             .createdAt(LocalDateTime.now())
             .build();
@@ -173,7 +172,7 @@ class PaymentServiceTest {
         assertThat(response.id()).isEqualTo(100L);
         assertThat(response.orderId()).isEqualTo(1L);
         assertThat(response.status()).isEqualTo(PaymentStatus.COMPLETED);
-        assertThat(response.amount()).isEqualByComparingTo(new BigDecimal("20000.00"));
+        assertThat(response.amount()).isEqualTo(20000L);
     }
 
     /**

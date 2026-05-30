@@ -1,6 +1,5 @@
 package com.msa.common.event;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -19,6 +18,6 @@ public record OrderCreatedEvent(
     Long userId,
     Long productId,
     int quantity,
-    BigDecimal totalAmount
+    Long totalAmount
 ) {
 }

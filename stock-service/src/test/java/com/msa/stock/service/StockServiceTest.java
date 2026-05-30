@@ -15,7 +15,6 @@ import com.msa.stock.dto.StockResponse;
 import com.msa.stock.repository.StockRepository;
 import com.msa.stock.repository.StockReservationRepository;
 import org.springframework.context.ApplicationEventPublisher;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,9 +55,9 @@ class StockServiceTest {
     @DisplayName("전체 재고 목록 조회 - 성공")
     void findAll_returnsAllStocks() {
         // given
-        Product p1 = Product.builder().id(1L).productName("노트북").price(BigDecimal.valueOf(1200000)).build();
-        Product p2 = Product.builder().id(2L).productName("마우스").price(BigDecimal.valueOf(35000)).build();
-        Product p3 = Product.builder().id(3L).productName("키보드").price(BigDecimal.valueOf(89000)).build();
+        Product p1 = Product.builder().id(1L).productName("노트북").price(1200000L).build();
+        Product p2 = Product.builder().id(2L).productName("마우스").price(35000L).build();
+        Product p3 = Product.builder().id(3L).productName("키보드").price(89000L).build();
         List<Stock> stocks = List.of(
             Stock.builder().id(1L).product(p1).totalQuantity(100).availableQuantity(100).build(),
             Stock.builder().id(2L).product(p2).totalQuantity(100).availableQuantity(100).build(),
@@ -102,7 +101,7 @@ class StockServiceTest {
     @DisplayName("StockResponse DTO 변환 - 필드 매핑 검증")
     void findAll_mapsFieldsCorrectly() {
         // given
-        Product product = Product.builder().id(5L).productName("헤드셋").imageName("headset.webp").price(BigDecimal.valueOf(120000)).build();
+        Product product = Product.builder().id(5L).productName("헤드셋").imageName("headset.webp").price(120000L).build();
         Stock stock = Stock.builder().id(10L).product(product).totalQuantity(50).availableQuantity(50).build();
         given(stockRepository.findAllWithProduct()).willReturn(List.of(stock));
 
@@ -115,7 +114,7 @@ class StockServiceTest {
         assertThat(response.productId()).isEqualTo(5L);
         assertThat(response.productName()).isEqualTo("헤드셋");
         assertThat(response.imageName()).isEqualTo("headset.webp");
-        assertThat(response.price()).isEqualByComparingTo(BigDecimal.valueOf(120000));
+        assertThat(response.price()).isEqualTo(120000L);
         assertThat(response.quantity()).isEqualTo(50);
     }
 
@@ -127,9 +126,9 @@ class StockServiceTest {
     @DisplayName("reserveStock: 재고 충분 시 예약 생성 및 stock.reserved 이벤트 발행, totalAmount 전달 검증")
     void reserveStock_재고충분_이벤트발행() {
         // given
-        Product product = Product.builder().id(10L).productName("노트북").price(BigDecimal.valueOf(1000000)).build();
+        Product product = Product.builder().id(10L).productName("노트북").price(1000000L).build();
         Stock stock = Stock.builder().id(1L).product(product).totalQuantity(100).availableQuantity(5).build();
-        BigDecimal totalAmount = new BigDecimal("2000000");
+        Long totalAmount = 2000000L;
         OrderCreatedEvent event = new OrderCreatedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, totalAmount);
 
         given(stockRepository.findByProductIdWithProduct(10L)).willReturn(Optional.of(stock));
@@ -147,7 +146,7 @@ class StockServiceTest {
         assertThat(published.userId()).isEqualTo(1L);
         assertThat(published.productId()).isEqualTo(10L);
         assertThat(published.quantity()).isEqualTo(2);
-        assertThat(published.totalAmount()).isEqualByComparingTo(totalAmount);
+        assertThat(published.totalAmount()).isEqualTo(totalAmount);
         assertThat(stock.getAvailableQuantity()).isEqualTo(3); // 5 - 2
     }
 
@@ -158,9 +157,9 @@ class StockServiceTest {
     @DisplayName("reserveStock: 재고 부족 시 예약 생성 않고 stock.insufficient 이벤트 발행")
     void reserveStock_재고부족_이벤트발행() {
         // given
-        Product product = Product.builder().id(10L).productName("노트북").price(BigDecimal.valueOf(1000000)).build();
+        Product product = Product.builder().id(10L).productName("노트북").price(1000000L).build();
         Stock stock = Stock.builder().id(1L).product(product).totalQuantity(100).availableQuantity(1).build();
-        OrderCreatedEvent event = new OrderCreatedEvent(UUID.randomUUID(), 1L, 1L, 10L, 5, new BigDecimal("5000000"));
+        OrderCreatedEvent event = new OrderCreatedEvent(UUID.randomUUID(), 1L, 1L, 10L, 5, 5000000L);
 
         given(stockRepository.findByProductIdWithProduct(10L)).willReturn(Optional.of(stock));
 

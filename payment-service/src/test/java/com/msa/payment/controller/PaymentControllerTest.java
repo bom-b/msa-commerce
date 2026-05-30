@@ -17,7 +17,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.is;
@@ -89,7 +88,7 @@ class PaymentControllerTest {
         paymentRepository.save(
             Payment.builder()
                 .orderId(1L)
-                .amount(new BigDecimal("20000.00"))
+                .amount(20000L)
                 .status(PaymentStatus.COMPLETED)
                 .createdAt(LocalDateTime.now())
                 .build());
@@ -100,7 +99,7 @@ class PaymentControllerTest {
             .andExpect(jsonPath("$.id", notNullValue()))
             .andExpect(jsonPath("$.orderId", is(1)))
             .andExpect(jsonPath("$.status", is("COMPLETED")))
-            .andExpect(jsonPath("$.amount", is(20000.00)));
+            .andExpect(jsonPath("$.amount", is(20000)));
     }
 
     /**

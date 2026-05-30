@@ -14,8 +14,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 /**
  * 사용자 예치금 엔티티. user_balances 테이블과 매핑된다.
  */
@@ -39,7 +37,7 @@ public class UserBalance {
 
     /** 현재 예치금 잔액 (원화). */
     @Column(nullable = false)
-    private BigDecimal balance;
+    private Long balance;
 
     /**
      * 예치금을 차감한다.
@@ -47,11 +45,11 @@ public class UserBalance {
      * @param amount 차감할 금액
      * @throws IllegalArgumentException 잔액이 차감 금액보다 부족한 경우
      */
-    public void deduct(BigDecimal amount) {
-        if (this.balance.compareTo(amount) < 0) {
+    public void deduct(Long amount) {
+        if (this.balance < amount) {
             throw new IllegalArgumentException("잔액 부족: 현재 잔액=" + this.balance + ", 요청=" + amount);
         }
-        this.balance = this.balance.subtract(amount);
+        this.balance = this.balance - amount;
     }
 
     /**
@@ -60,10 +58,10 @@ public class UserBalance {
      * @param amount 충전할 금액
      * @throws IllegalArgumentException 충전 금액이 null이거나 0 이하인 경우
      */
-    public void charge(BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+    public void charge(Long amount) {
+        if (amount == null || amount <= 0) {
             throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다.");
         }
-        this.balance = this.balance.add(amount);
+        this.balance = this.balance + amount;
     }
 }

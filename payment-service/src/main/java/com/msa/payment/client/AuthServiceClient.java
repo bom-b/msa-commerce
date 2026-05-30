@@ -9,8 +9,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
 
-import java.math.BigDecimal;
-
 /**
  * Auth Service REST 클라이언트.
  */
@@ -37,7 +35,7 @@ public class AuthServiceClient {
      * @param amount 차감 금액
      * @throws IllegalArgumentException 잔액 부족 또는 사용자 없음 (4xx 응답)
      */
-    public void deduct(Long userId, BigDecimal amount) {
+    public void deduct(Long userId, Long amount) {
         try {
             restClient.post()
                 .uri("/auth/balance/deduct")
@@ -71,7 +69,7 @@ public class AuthServiceClient {
      * 예치금 차감 요청 DTO (내부 전용).
      *
      * @param userId 사용자 ID
-     * @param amount 차감 금액
+     * @param amount 차감 금액 (원화)
      */
-    private record DeductRequest(Long userId, BigDecimal amount) {}
+    private record DeductRequest(Long userId, Long amount) {}
 }

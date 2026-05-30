@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.msa.stock.dto.StockResponse;
 import com.msa.stock.service.StockService;
-import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,11 +40,11 @@ class StockControllerTest {
     void getStocks_returns200WithStockList() throws Exception {
         // given
         List<StockResponse> stocks = List.of(
-                new StockResponse(1L, 1L, "노트북", 100, "notebook.webp", BigDecimal.valueOf(1200000)),
-                new StockResponse(2L, 2L, "마우스", 100, "mouse.webp", BigDecimal.valueOf(35000)),
-                new StockResponse(3L, 3L, "키보드", 100, "keyboard.webp", BigDecimal.valueOf(89000)),
-                new StockResponse(4L, 4L, "모니터", 100, "monitor.webp", BigDecimal.valueOf(450000)),
-                new StockResponse(5L, 5L, "헤드셋", 100, "headset.webp", BigDecimal.valueOf(120000))
+                new StockResponse(1L, 1L, "노트북", 100, "notebook.webp", 1200000L),
+                new StockResponse(2L, 2L, "마우스", 100, "mouse.webp", 35000L),
+                new StockResponse(3L, 3L, "키보드", 100, "keyboard.webp", 89000L),
+                new StockResponse(4L, 4L, "모니터", 100, "monitor.webp", 450000L),
+                new StockResponse(5L, 5L, "헤드셋", 100, "headset.webp", 120000L)
         );
         given(stockService.findAll()).willReturn(stocks);
 

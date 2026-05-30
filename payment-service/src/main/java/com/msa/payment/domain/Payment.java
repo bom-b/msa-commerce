@@ -13,7 +13,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -34,9 +33,9 @@ public class Payment {
     @Column(nullable = false, unique = true)
     private Long orderId;
 
-    /** 결제 금액. */
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal amount;
+    /** 결제 금액 (원화). */
+    @Column(nullable = false)
+    private Long amount;
 
     /** 결제 상태 (COMPLETED, FAILED, REFUNDED). */
     @Enumerated(EnumType.STRING)
@@ -56,7 +55,7 @@ public class Payment {
      * @param createdAt 생성 일시
      */
     @Builder
-    private Payment(Long orderId, BigDecimal amount, PaymentStatus status, LocalDateTime createdAt) {
+    private Payment(Long orderId, Long amount, PaymentStatus status, LocalDateTime createdAt) {
         this.orderId = orderId;
         this.amount = amount;
         this.status = status;

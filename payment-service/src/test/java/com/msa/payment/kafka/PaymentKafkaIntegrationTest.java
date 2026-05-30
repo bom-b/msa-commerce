@@ -18,7 +18,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -92,7 +91,7 @@ class PaymentKafkaIntegrationTest {
         // given
         Long orderId = 42L;
         StockReservedEvent event = new StockReservedEvent(
-            UUID.randomUUID(), orderId, 1L, 10L, 2, new BigDecimal("30000.00"));
+            UUID.randomUUID(), orderId, 1L, 10L, 2, 30000L);
 
         // when
         kafkaTemplate.send("stock.reserved", String.valueOf(orderId), event);
@@ -102,7 +101,7 @@ class PaymentKafkaIntegrationTest {
             assertThat(paymentRepository.existsByOrderId(orderId)).isTrue();
             paymentRepository.findByOrderId(orderId).ifPresent(payment -> {
                 assertThat(payment.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
-                assertThat(payment.getAmount()).isEqualByComparingTo(new BigDecimal("30000.00"));
+                assertThat(payment.getAmount()).isEqualTo(30000L);
             });
         });
     }
@@ -116,7 +115,7 @@ class PaymentKafkaIntegrationTest {
         // given
         Long orderId = 99L;
         StockReservedEvent event = new StockReservedEvent(
-            UUID.randomUUID(), orderId, 1L, 10L, 1, new BigDecimal("10000.00"));
+            UUID.randomUUID(), orderId, 1L, 10L, 1, 10000L);
 
         // when
         kafkaTemplate.send("stock.reserved", String.valueOf(orderId), event);

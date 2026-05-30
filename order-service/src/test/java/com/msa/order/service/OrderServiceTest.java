@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -59,7 +58,7 @@ class OrderServiceTest {
         // given
         CreateOrderRequest request = new CreateOrderRequest(1L, 2);
 
-        StockServiceClient.StockInfo stockInfo = new StockServiceClient.StockInfo(1L, "노트북", BigDecimal.valueOf(1000000));
+        StockServiceClient.StockInfo stockInfo = new StockServiceClient.StockInfo(1L, "노트북", 1000000L);
         given(stockServiceClient.getStock(1L)).willReturn(stockInfo);
 
         Order savedOrder = Order.builder()
@@ -67,7 +66,7 @@ class OrderServiceTest {
             .productId(1L)
             .productName("노트북")
             .quantity(2)
-            .totalAmount(BigDecimal.valueOf(2000000))
+            .totalAmount(2000000L)
             .status(OrderStatus.PENDING)
             .createdAt(LocalDateTime.now())
             .build();
@@ -83,7 +82,7 @@ class OrderServiceTest {
         assertThat(response.id()).isEqualTo(1L);
         assertThat(response.userId()).isEqualTo(1L);
         assertThat(response.productName()).isEqualTo("노트북");
-        assertThat(response.totalAmount()).isEqualByComparingTo(BigDecimal.valueOf(2000000));
+        assertThat(response.totalAmount()).isEqualTo(2000000L);
         assertThat(response.status()).isEqualTo(OrderStatus.PENDING);
 
         then(orderRepository).should().save(any(Order.class));
@@ -133,7 +132,7 @@ class OrderServiceTest {
             .productId(1L)
             .productName("노트북")
             .quantity(2)
-            .totalAmount(BigDecimal.valueOf(2000000))
+            .totalAmount(2000000L)
             .status(OrderStatus.PENDING)
             .createdAt(LocalDateTime.now())
             .build();
@@ -161,7 +160,7 @@ class OrderServiceTest {
             .productId(1L)
             .productName("노트북")
             .quantity(2)
-            .totalAmount(BigDecimal.valueOf(2000000))
+            .totalAmount(2000000L)
             .status(OrderStatus.PENDING)
             .createdAt(LocalDateTime.now())
             .build();

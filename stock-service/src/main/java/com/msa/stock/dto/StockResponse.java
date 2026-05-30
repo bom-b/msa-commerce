@@ -2,8 +2,6 @@ package com.msa.stock.dto;
 
 import com.msa.stock.domain.Stock;
 
-import java.math.BigDecimal;
-
 /**
  * 재고 조회 응답 DTO.
  *
@@ -20,7 +18,7 @@ public record StockResponse(
         String productName,
         int quantity,
         String imageName,
-        BigDecimal price
+        Long price
 ) {
 
     /**

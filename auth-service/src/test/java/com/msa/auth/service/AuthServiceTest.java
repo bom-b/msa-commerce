@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -111,14 +110,14 @@ class AuthServiceTest {
         UserBalance userBalance = UserBalance.builder()
             .id(1L)
             .user(user)
-            .balance(new BigDecimal("50000"))
+            .balance(50000L)
             .build();
         when(userBalanceRepository.findByUser_Id(1L)).thenReturn(Optional.of(userBalance));
 
         BalanceResponse response = authService.getBalance(1L);
 
         assertThat(response.userId()).isEqualTo(1L);
-        assertThat(response.balance()).isEqualByComparingTo(new BigDecimal("50000"));
+        assertThat(response.balance()).isEqualTo(50000L);
     }
 
     /**
@@ -141,13 +140,13 @@ class AuthServiceTest {
         UserBalance userBalance = UserBalance.builder()
             .id(1L)
             .user(user)
-            .balance(new BigDecimal("50000"))
+            .balance(50000L)
             .build();
         when(userBalanceRepository.findByUser_Id(1L)).thenReturn(Optional.of(userBalance));
 
-        BalanceResponse response = authService.charge(1L, new BigDecimal("10000"));
+        BalanceResponse response = authService.charge(1L, 10000L);
 
-        assertThat(response.balance()).isEqualByComparingTo(new BigDecimal("60000"));
+        assertThat(response.balance()).isEqualTo(60000L);
     }
 
     /**
@@ -155,7 +154,7 @@ class AuthServiceTest {
      */
     @Test
     void charge_withZeroAmount_throwsIllegalArgumentException() {
-        assertThatThrownBy(() -> authService.charge(1L, BigDecimal.ZERO))
+        assertThatThrownBy(() -> authService.charge(1L, 0L))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -164,7 +163,7 @@ class AuthServiceTest {
      */
     @Test
     void charge_withNegativeAmount_throwsIllegalArgumentException() {
-        assertThatThrownBy(() -> authService.charge(1L, new BigDecimal("-1000")))
+        assertThatThrownBy(() -> authService.charge(1L, -1000L))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -177,13 +176,13 @@ class AuthServiceTest {
         UserBalance userBalance = UserBalance.builder()
             .id(1L)
             .user(user)
-            .balance(new BigDecimal("50000"))
+            .balance(50000L)
             .build();
         when(userBalanceRepository.findByUser_Id(1L)).thenReturn(Optional.of(userBalance));
 
-        authService.deduct(1L, new BigDecimal("10000"));
+        authService.deduct(1L, 10000L);
 
-        assertThat(userBalance.getBalance()).isEqualByComparingTo(new BigDecimal("40000"));
+        assertThat(userBalance.getBalance()).isEqualTo(40000L);
     }
 
     /**
@@ -195,11 +194,11 @@ class AuthServiceTest {
         UserBalance userBalance = UserBalance.builder()
             .id(1L)
             .user(user)
-            .balance(new BigDecimal("5000"))
+            .balance(5000L)
             .build();
         when(userBalanceRepository.findByUser_Id(1L)).thenReturn(Optional.of(userBalance));
 
-        assertThatThrownBy(() -> authService.deduct(1L, new BigDecimal("10000")))
+        assertThatThrownBy(() -> authService.deduct(1L, 10000L))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("잔액 부족");
     }
@@ -211,7 +210,7 @@ class AuthServiceTest {
     void deduct_withNotFoundUserId_throwsNoSuchElementException() {
         when(userBalanceRepository.findByUser_Id(99L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authService.deduct(99L, new BigDecimal("10000")))
+        assertThatThrownBy(() -> authService.deduct(99L, 10000L))
             .isInstanceOf(NoSuchElementException.class)
             .hasMessageContaining("99");
     }

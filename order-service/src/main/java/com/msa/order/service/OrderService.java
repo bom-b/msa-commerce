@@ -13,7 +13,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -41,7 +40,7 @@ public class OrderService {
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request, Long userId) {
         StockServiceClient.StockInfo stockInfo = stockServiceClient.getStock(request.productId());
-        BigDecimal totalAmount = stockInfo.price().multiply(BigDecimal.valueOf(request.quantity()));
+        Long totalAmount = stockInfo.price() * request.quantity();
 
         Order order = Order.builder()
             .userId(userId)

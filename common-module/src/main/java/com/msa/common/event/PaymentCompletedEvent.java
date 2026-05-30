@@ -1,6 +1,5 @@
 package com.msa.common.event;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -16,6 +15,6 @@ public record PaymentCompletedEvent(
     UUID eventId,
     Long orderId,
     Long paymentId,
-    BigDecimal amount
+    Long amount
 ) {
 }

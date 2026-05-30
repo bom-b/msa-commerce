@@ -3,7 +3,6 @@ package com.msa.payment.dto;
 import com.msa.payment.domain.Payment;
 import com.msa.payment.domain.PaymentStatus;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -15,7 +14,7 @@ import java.time.LocalDateTime;
  * @param status    결제 상태
  * @param createdAt 결제 생성 일시
  */
-public record PaymentResponse(Long id, Long orderId, BigDecimal amount, PaymentStatus status, LocalDateTime createdAt) {
+public record PaymentResponse(Long id, Long orderId, Long amount, PaymentStatus status, LocalDateTime createdAt) {
 
     /**
      * Payment 엔티티로부터 PaymentResponse를 생성하는 팩토리 메서드.

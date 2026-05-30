@@ -22,7 +22,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -122,7 +121,7 @@ class OrderControllerTest {
         // given
         CreateOrderRequest request = new CreateOrderRequest(1L, 2);
         given(stockServiceClient.getStock(anyLong()))
-            .willReturn(new StockServiceClient.StockInfo(1L, "노트북", BigDecimal.valueOf(1000000)));
+            .willReturn(new StockServiceClient.StockInfo(1L, "노트북", 1000000L));
 
         // when & then
         mockMvc
@@ -177,7 +176,7 @@ class OrderControllerTest {
                     .productId(1L)
                     .productName("노트북")
                     .quantity(2)
-                    .totalAmount(new java.math.BigDecimal("2000000"))
+                    .totalAmount(2000000L)
                     .status(OrderStatus.PENDING)
                     .createdAt(LocalDateTime.now())
                     .build());

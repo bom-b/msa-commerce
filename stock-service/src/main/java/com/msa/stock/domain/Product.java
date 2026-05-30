@@ -11,8 +11,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 /**
  * 상품 엔티티.
  */
@@ -36,7 +34,7 @@ public class Product {
     /** 상품 이미지 파일명. */
     private String imageName;
 
-    /** 상품 가격. */
+    /** 상품 가격 (원화). */
     @Column(nullable = false)
-    private BigDecimal price;
+    private Long price;
 }

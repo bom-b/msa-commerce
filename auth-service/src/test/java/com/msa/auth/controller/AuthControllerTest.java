@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -72,7 +71,7 @@ class AuthControllerTest {
      */
     @Test
     void getBalance_withValidUserId_returns200WithBalance() throws Exception {
-        when(authService.getBalance(eq(1L))).thenReturn(new BalanceResponse(1L, BigDecimal.valueOf(50000)));
+        when(authService.getBalance(eq(1L))).thenReturn(new BalanceResponse(1L, 50000L));
 
         mockMvc.perform(get("/auth/balance")
                 .header("X-User-Id", "1"))
@@ -98,7 +97,7 @@ class AuthControllerTest {
      */
     @Test
     void charge_withValidAmount_returns200WithUpdatedBalance() throws Exception {
-        when(authService.charge(eq(1L), any())).thenReturn(new BalanceResponse(1L, BigDecimal.valueOf(60000)));
+        when(authService.charge(eq(1L), any())).thenReturn(new BalanceResponse(1L, 60000L));
 
         mockMvc.perform(post("/auth/balance/charge")
                 .header("X-User-Id", "1")
@@ -113,7 +112,7 @@ class AuthControllerTest {
      */
     @Test
     void charge_withZeroAmount_returns400() throws Exception {
-        when(authService.charge(eq(1L), argThat(a -> a != null && a.compareTo(BigDecimal.ZERO) == 0))).thenThrow(new IllegalArgumentException("충전 금액은 0보다 커야 합니다."));
+        when(authService.charge(eq(1L), argThat(a -> a != null && a == 0L))).thenThrow(new IllegalArgumentException("충전 금액은 0보다 커야 합니다."));
 
         mockMvc.perform(post("/auth/balance/charge")
                 .header("X-User-Id", "1")

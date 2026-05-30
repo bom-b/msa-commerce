@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.crypto.SecretKey;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.NoSuchElementException;
@@ -79,8 +78,8 @@ public class AuthService {
      * @throws NoSuchElementException 예치금 정보가 존재하지 않는 경우
      */
     @Transactional
-    public BalanceResponse charge(Long userId, BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+    public BalanceResponse charge(Long userId, Long amount) {
+        if (amount == null || amount <= 0) {
             throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다.");
         }
         UserBalance balance = userBalanceRepository.findByUser_Id(userId)
@@ -98,7 +97,7 @@ public class AuthService {
      * @throws IllegalArgumentException 잔액이 부족한 경우
      */
     @Transactional
-    public void deduct(Long userId, BigDecimal amount) {
+    public void deduct(Long userId, Long amount) {
         UserBalance balance = userBalanceRepository.findByUser_Id(userId)
             .orElseThrow(() -> new NoSuchElementException("예치금 정보를 찾을 수 없습니다. userId=" + userId));
         balance.deduct(amount);

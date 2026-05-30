@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 
 /**
@@ -50,12 +49,12 @@ public class StockServiceClient {
      *
      * @param productId   상품 ID
      * @param productName 상품명
-     * @param price       상품 단가
+     * @param price       상품 단가 (원화)
      */
     public record StockInfo(
         Long productId,
         String productName,
-        BigDecimal price
+        Long price
     ) {
     }
 }
