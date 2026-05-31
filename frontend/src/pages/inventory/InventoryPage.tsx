@@ -1,12 +1,13 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getStocks, addStock, type Stock } from '../../api/stocks'
+import Toast, { type ToastData } from '../../components/ui/Toast'
 import styles from './InventoryPage.module.scss'
 
+/** 상품별 재고 추가 입력 상태 */
 interface AddState {
     quantity: number
     loading: boolean
-    success: string | null
 }
 
 export default function InventoryPage() {
@@ -17,9 +18,10 @@ export default function InventoryPage() {
     })
 
     const [addStates, setAddStates] = useState<Record<number, AddState>>({})
+    const [toast, setToast] = useState<ToastData | null>(null)
 
     function getAddState(productId: number): AddState {
-        return addStates[productId] ?? { quantity: 10, loading: false, success: null }
+        return addStates[productId] ?? { quantity: 10, loading: false }
     }
 
     function setAddField(productId: number, partial: Partial<AddState>) {
@@ -29,25 +31,25 @@ export default function InventoryPage() {
         }))
     }
 
+    /** "재고 추가" 버튼 클릭 — 재고 추가 API를 호출하고 결과를 토스트로 표시한다 */
     async function handleAddStock(stock: Stock) {
         const state = getAddState(stock.productId)
         if (state.quantity < 1) return
 
-        setAddField(stock.productId, { loading: true, success: null })
+        const addedQuantity = state.quantity
+        setAddField(stock.productId, { loading: true })
         try {
-            // 재고 추가 API — stock-service에 PUT /stocks/{productId}/quantity 구현 예정
-            await addStock(stock.productId, state.quantity)
-            setAddField(stock.productId, {
-                loading: false,
-                success: `${state.quantity}개 추가 완료`,
-                quantity: 10,
-            })
+            await addStock(stock.productId, addedQuantity)
+            setAddField(stock.productId, { loading: false, quantity: 10 })
+            setToast({ message: `${stock.productName} 재고 ${addedQuantity}개를 추가했습니다.` })
             queryClient.invalidateQueries({ queryKey: ['stocks'] })
         } catch {
             // 전역 Axios 인터셉터가 window.alert()로 처리
             setAddField(stock.productId, { loading: false })
         }
     }
+
+    const handleCloseToast = useCallback(() => setToast(null), [])
 
     if (isLoading) {
         return (
@@ -67,13 +69,11 @@ export default function InventoryPage() {
 
     return (
         <div className={styles.page}>
+            <Toast toast={toast} onClose={handleCloseToast} />
+
             <div className={styles.pageHeader}>
                 <h1 className={styles.pageTitle}>재고 관리</h1>
                 <p className={styles.pageDescription}>상품별 재고를 확인하고 추가할 수 있습니다.</p>
-            </div>
-
-            <div className={styles.notice}>
-                재고 추가 기능은 stock-service 백엔드 구현 후 정상 동작합니다. (API: PUT /stocks/&#123;productId&#125;/quantity)
             </div>
 
             <div className={styles.tableWrapper}>
@@ -84,7 +84,6 @@ export default function InventoryPage() {
                             <th className={styles.th}>상품명</th>
                             <th className={styles.th}>현재 재고</th>
                             <th className={styles.th}>추가 수량</th>
-                            <th className={styles.th}>결과</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -129,9 +128,6 @@ export default function InventoryPage() {
                                                 {state.loading ? '처리 중...' : '재고 추가'}
                                             </button>
                                         </div>
-                                    </td>
-                                    <td className={`${styles.td} ${styles.resultCell}`}>
-                                        {state.success && <span className={styles.successMsg}>{state.success}</span>}
                                     </td>
                                 </tr>
                             )

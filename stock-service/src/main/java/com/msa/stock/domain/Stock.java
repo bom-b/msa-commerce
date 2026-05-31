@@ -18,6 +18,11 @@ import lombok.NoArgsConstructor;
 public class Stock {
 
     /**
+     * 총 재고 수량 상한(999개).
+     */
+    private static final int MAX_QUANTITY = 999;
+
+    /**
      * 재고 PK.
      */
     @Id
@@ -71,6 +76,21 @@ public class Stock {
      * @param amount 복구할 수량
      */
     public void restoreQuantity(int amount) {
+        this.availableQuantity += amount;
+    }
+
+    /**
+     * 신규 입고분을 총 재고와 가용 재고에 함께 더한다.
+     *
+     * @param amount 입고할 수량
+     * @throws IllegalArgumentException 입고 수량이 1 미만일 때, 또는 입고 후 총 재고가 999를 초과할 때
+     */
+    public void addQuantity(int amount) {
+        if (this.totalQuantity + amount > MAX_QUANTITY) {
+            throw new IllegalArgumentException("재고는 " + MAX_QUANTITY + "개를 초과할 수 없습니다.");
+        }
+
+        this.totalQuantity += amount;
         this.availableQuantity += amount;
     }
 }

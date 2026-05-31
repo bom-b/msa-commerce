@@ -1,10 +1,17 @@
 package com.msa.stock.controller;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.msa.stock.dto.StockAddRequest;
 import com.msa.stock.dto.StockResponse;
 import com.msa.stock.service.StockService;
 import java.util.List;
@@ -25,6 +32,10 @@ class StockControllerTest {
     /** MockMvc HTTP 요청 수행 객체. */
     @Autowired
     private MockMvc mockMvc;
+
+    /** JSON 직렬화 객체. */
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /** 목킹된 재고 서비스. */
     @MockBean
@@ -74,5 +85,43 @@ class StockControllerTest {
         mockMvc.perform(get("/stocks").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    /**
+     * POST /stocks/{productId}/quantity 요청 시 200 OK와 갱신된 재고 JSON을 반환하는지 검증한다.
+     *
+     * @throws Exception MockMvc 수행 중 발생하는 예외
+     */
+    @Test
+    @DisplayName("POST /stocks/{productId}/quantity - 입고 성공 시 갱신된 재고 반환")
+    void addStock_returns200WithUpdatedStock() throws Exception {
+        // given
+        StockResponse updated = new StockResponse(1L, 1L, "노트북", 120, "notebook.webp", 1200000L);
+        given(stockService.addStock(eq(1L), eq(20))).willReturn(updated);
+
+        // when & then
+        mockMvc.perform(post("/stocks/1/quantity")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new StockAddRequest(20))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productId").value(1))
+                .andExpect(jsonPath("$.quantity").value(120));
+        verify(stockService).addStock(1L, 20);
+    }
+
+    /**
+     * POST /stocks/{productId}/quantity 요청 시 quantity가 1 미만이면 400을 반환하고 서비스를 호출하지 않는지 검증한다.
+     *
+     * @throws Exception MockMvc 수행 중 발생하는 예외
+     */
+    @Test
+    @DisplayName("POST /stocks/{productId}/quantity - quantity가 0이면 400 반환")
+    void addStock_returns400_whenQuantityBelowMin() throws Exception {
+        // when & then
+        mockMvc.perform(post("/stocks/1/quantity")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new StockAddRequest(0))))
+                .andExpect(status().isBadRequest());
+        verify(stockService, never()).addStock(eq(1L), anyInt());
     }
 }

@@ -15,10 +15,10 @@ export async function getStocks(): Promise<Stock[]> {
 }
 
 /**
- * 재고 추가 API — stock-service에 PUT /stocks/{productId}/quantity 구현 예정
- * 현재 백엔드 미구현 상태이므로 호출 시 에러가 발생할 수 있음
+ * 재고 추가 API — stock-service의 POST /stocks/{productId}/quantity 호출
+ * 바디로 추가 수량을 전달하면 갱신된 Stock을 반환한다
  */
 export async function addStock(productId: number, quantity: number): Promise<Stock> {
-    const response = await client.put<Stock>(`/stocks/${productId}/quantity`, { quantity })
+    const response = await client.post<Stock>(`/stocks/${productId}/quantity`, { quantity })
     return response.data
 }

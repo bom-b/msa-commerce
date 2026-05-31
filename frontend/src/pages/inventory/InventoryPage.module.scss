@@ -23,18 +23,6 @@
     color: v.$color-text-secondary;
 }
 
-.notice {
-    @include m.flex-start;
-    gap: v.$space-3;
-    padding: v.$space-4;
-    background: v.$color-warning-bg;
-    border: 1px solid #e0c97f;
-    border-radius: v.$radius-md;
-    margin-bottom: v.$space-6;
-    font-size: v.$font-size-sm;
-    color: v.$color-warning;
-}
-
 .stateBox {
     @include m.card;
     padding: v.$space-12;
@@ -139,13 +127,4 @@
     padding: v.$space-2 v.$space-4;
     font-size: v.$font-size-sm;
     white-space: nowrap;
-}
-
-.resultCell {
-    min-width: 180px;
-}
-
-.successMsg {
-    font-size: v.$font-size-sm;
-    color: v.$color-success;
 }

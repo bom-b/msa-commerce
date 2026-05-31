@@ -65,6 +65,25 @@ public class StockService {
     }
 
     /**
+     * 상품의 재고를 입고하여 총 재고와 가용 재고를 함께 증가시킨다.
+     *
+     * @param productId 상품 ID
+     * @param amount    입고할 수량 (1 이상)
+     * @return 갱신된 재고 응답 DTO
+     * @throws NoSuchElementException 해당 상품의 재고가 없을 경우
+     * @throws IllegalArgumentException 입고 수량이 1 미만일 때
+     */
+    @Transactional
+    public StockResponse addStock(Long productId, int amount) {
+        Stock stock = stockRepository.findByProductIdWithProduct(productId)
+            .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다. productId: " + productId));
+
+        stock.addQuantity(amount);
+        log.info("재고 입고 완료 - productId: {}, amount: {}, totalQuantity: {}", productId, amount, stock.getTotalQuantity());
+        return StockResponse.from(stock);
+    }
+
+    /**
      * 주문 생성 이벤트를 처리하여 재고를 예약한다.
      * 예약 성공 시 커밋 후 stock.reserved 이벤트를 발행하고,
      * 재고 부족 시 stock.insufficient 이벤트를 즉시 발행한다.

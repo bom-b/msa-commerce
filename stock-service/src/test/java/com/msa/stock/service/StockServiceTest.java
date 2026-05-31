@@ -2,6 +2,7 @@ package com.msa.stock.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -16,6 +17,7 @@ import com.msa.stock.repository.StockRepository;
 import com.msa.stock.repository.StockReservationRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -176,5 +178,40 @@ class StockServiceTest {
         assertThat(published.orderId()).isEqualTo(1L);
         assertThat(published.reason()).isNotBlank();
         assertThat(stock.getAvailableQuantity()).isEqualTo(1); // 변경 없음
+    }
+
+    /**
+     * addStock() 호출 시 총 재고와 가용 재고가 모두 증가하고 갱신된 DTO가 반환되는지 검증한다.
+     */
+    @Test
+    @DisplayName("addStock: 입고 시 총 재고와 가용 재고 모두 증가 및 갱신 DTO 반환")
+    void addStock_재고증가_DTO반환() {
+        // given
+        Product product = Product.builder().id(10L).productName("노트북").imageName("notebook.webp").price(1000000L).build();
+        Stock stock = Stock.builder().id(1L).product(product).totalQuantity(100).availableQuantity(80).build();
+        given(stockRepository.findByProductIdWithProduct(10L)).willReturn(Optional.of(stock));
+
+        // when
+        StockResponse result = stockService.addStock(10L, 20);
+
+        // then
+        assertThat(stock.getTotalQuantity()).isEqualTo(120);
+        assertThat(stock.getAvailableQuantity()).isEqualTo(100);
+        assertThat(result.productId()).isEqualTo(10L);
+        assertThat(result.quantity()).isEqualTo(100);
+    }
+
+    /**
+     * addStock() 호출 시 존재하지 않는 상품이면 NoSuchElementException이 발생하는지 검증한다.
+     */
+    @Test
+    @DisplayName("addStock: 존재하지 않는 상품이면 NoSuchElementException 발생")
+    void addStock_상품없음_예외() {
+        // given
+        given(stockRepository.findByProductIdWithProduct(999L)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> stockService.addStock(999L, 10))
+            .isInstanceOf(NoSuchElementException.class);
     }
 }
