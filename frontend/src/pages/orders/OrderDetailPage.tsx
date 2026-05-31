@@ -1,10 +1,10 @@
 import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { getOrder, type Order, type OrderStatus } from '../api/orders'
-import { getPaymentByOrderId, type Payment } from '../api/payments'
-import StatusBadge from '../components/StatusBadge'
-import ChevronLeftIcon from '../assets/icon/chevron-left.svg?react'
+import { getOrder, type Order, type OrderStatus } from '../../api/orders'
+import { getPaymentByOrderId, type Payment } from '../../api/payments'
+import StatusBadge from '../../components/ui/StatusBadge'
+import ChevronLeftIcon from '../../assets/icon/chevron-left.svg?react'
 import styles from './OrderDetailPage.module.scss'
 
 function formatDate(iso: string) {

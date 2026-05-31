@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '../store/authStore'
-import { getStocks, type Stock } from '../api/stocks'
-import { createOrder } from '../api/orders'
-import Toast, { type ToastData } from '../components/Toast'
-import OrderConfirmModal from './OrderConfirmModal'
+import { useAuthStore } from '../../store/authStore'
+import { getStocks, type Stock } from '../../api/stocks'
+import { createOrder } from '../../api/orders'
+import Toast, { type ToastData } from '../../components/ui/Toast'
+import OrderConfirmModal from '../orders/OrderConfirmModal'
 import styles from './ProductsPage.module.scss'
 
 /** 상품별 주문 입력 상태 */

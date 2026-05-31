@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { getOrders, type Order, type PageResponse } from '../api/orders'
-import StatusBadge from '../components/StatusBadge'
+import { getOrders, type Order, type PageResponse } from '../../api/orders'
+import StatusBadge from '../../components/ui/StatusBadge'
 import styles from './OrdersPage.module.scss'
 
 const PAGE_SIZE = 10

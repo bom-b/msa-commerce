@@ -1,5 +1,5 @@
-import type { OrderStatus } from '../api/orders'
-import type { PaymentStatus } from '../api/payments'
+import type { OrderStatus } from '../../api/orders'
+import type { PaymentStatus } from '../../api/payments'
 import styles from './StatusBadge.module.scss'
 
 const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {

@@ -1,5 +1,5 @@
-@use '../styles/variables' as v;
-@use '../styles/mixins' as m;
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
 
 .page {
     padding: v.$page-padding-y v.$page-padding-x;
@@ -149,4 +149,3 @@
     font-size: v.$font-size-sm;
     color: v.$color-success;
 }
-

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getStocks, addStock, type Stock } from '../api/stocks'
+import { getStocks, addStock, type Stock } from '../../api/stocks'
 import styles from './InventoryPage.module.scss'
 
 interface AddState {

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getBalance, chargeBalance } from '../api/auth'
+import { getBalance, chargeBalance } from '../../api/auth'
 import styles from './ChargePage.module.scss'
 
 const QUICK_AMOUNTS = [10_000, 30_000, 50_000, 100_000]
