@@ -55,9 +55,10 @@
     letter-spacing: 0.4px;
 }
 
+// 직접 입력 금액에 누적 가산하는 버튼 그룹
 .quickBtns {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: v.$space-3;
 }
 
@@ -115,12 +116,6 @@
 
     &::placeholder {
         color: v.$color-text-secondary;
-    }
-
-    /* 숫자 입력 화살표 제거 */
-    &::-webkit-outer-spin-button,
-    &::-webkit-inner-spin-button {
-        -webkit-appearance: none;
     }
 }
 

@@ -25,6 +25,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserBalance {
 
+    /** 예치금 잔액 상한(1억). */
+    private static final long MAX_BALANCE = 100_000_000L;
+
     /** 예치금 레코드 ID (기본키, 자동 증가). */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,11 +59,11 @@ public class UserBalance {
      * 예치금을 충전한다.
      *
      * @param amount 충전할 금액
-     * @throws IllegalArgumentException 충전 금액이 null이거나 0 이하인 경우
+     * @throws IllegalArgumentException 충전 금액이 null이거나 0 이하인 경우, 또는 충전 후 잔액이 1억을 초과하는 경우
      */
     public void charge(Long amount) {
-        if (amount == null || amount <= 0) {
-            throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다.");
+        if (amount > MAX_BALANCE - this.balance) {
+            throw new IllegalArgumentException("예치금은 " + MAX_BALANCE + "원을 초과할 수 없습니다.");
         }
         this.balance = this.balance + amount;
     }
