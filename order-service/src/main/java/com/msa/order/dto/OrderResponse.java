@@ -1,6 +1,7 @@
 package com.msa.order.dto;
 
 import com.msa.order.domain.Order;
+import com.msa.order.domain.OrderFailureReason;
 import com.msa.order.domain.OrderStatus;
 
 import java.time.LocalDateTime;
@@ -37,6 +38,7 @@ public record OrderResponse(
      * @return OrderResponse 인스턴스
      */
     public static OrderResponse from(Order order) {
+        OrderFailureReason failureReason = order.getFailureReason();
         return new OrderResponse(
             order.getId(),
             order.getUserId(),
@@ -46,6 +48,6 @@ public record OrderResponse(
             order.getTotalAmount(),
             order.getStatus(),
             order.getCreatedAt(),
-            order.getFailureReason());
+            failureReason != null ? failureReason.getMessage() : null);
     }
 }

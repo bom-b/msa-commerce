@@ -1,10 +1,10 @@
-import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { getOrder, type Order, type OrderStatus } from '../../api/orders'
+import { getOrder, type Order } from '../../api/orders'
 import { getPaymentByOrderId, type Payment } from '../../api/payments'
 import StatusBadge from '../../components/ui/StatusBadge'
 import ChevronLeftIcon from '../../assets/icon/chevron-left.svg?react'
+import InfoIcon from '../../assets/icon/info.svg?react'
 import styles from './OrderDetailPage.module.scss'
 
 function formatDate(iso: string) {
@@ -21,12 +21,6 @@ function formatDate(iso: string) {
 function formatAmount(amount: number) {
     return amount.toLocaleString('ko-KR') + '원'
 }
-
-const SAGA_STEPS: { status: OrderStatus; label: string }[] = [
-    { status: 'PENDING', label: '주문 생성' },
-    { status: 'COMPLETED', label: '재고 확보' },
-    { status: 'COMPLETED', label: '결제 완료' },
-]
 
 export default function OrderDetailPage() {
     const { id } = useParams<{ id: string }>()
@@ -81,6 +75,17 @@ export default function OrderDetailPage() {
 
             <h1 className={styles.pageTitle}>주문 #{order.id}</h1>
 
+            {/* 취소 사유 강조 배너 */}
+            {isCancelled && order.failureReason && (
+                <div className={styles.cancelBanner} role="alert">
+                    <InfoIcon className={styles.cancelBannerIcon} width={20} height={20} aria-hidden="true" />
+                    <div className={styles.cancelBannerContent}>
+                        <span className={styles.cancelBannerLabel}>취소 사유</span>
+                        <span className={styles.cancelBannerValue}>{order.failureReason}</span>
+                    </div>
+                </div>
+            )}
+
             {/* 주문 정보 */}
             <div className={styles.section}>
                 <div className={styles.sectionHeader}>
@@ -107,41 +112,6 @@ export default function OrderDetailPage() {
                             <span className={styles.fieldValue}>{formatDate(order.createdAt)}</span>
                         </div>
                     </div>
-                    {isCancelled && order.failureReason && (
-                        <div className={styles.failureReason}>
-                            <span className={styles.failureReasonLabel}>취소 사유</span>
-                            <span className={styles.failureReasonValue}>{order.failureReason}</span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Saga 진행 단계 표시 */}
-                <div className={styles.sagaFlow}>
-                    {SAGA_STEPS.map((step, idx) => {
-                        // idx 0: 주문 생성 — 주문이 존재하면 항상 완료
-                        // idx 1: 재고 확보 — COMPLETED 또는 CANCELLED (재고 처리가 진행됨)
-                        // idx 2: 결제 완료 — COMPLETED 상태일 때만 활성
-                        const isActive =
-                            idx === 0 ||
-                            (idx === 1 && (order.status === 'COMPLETED' || order.status === 'CANCELLED')) ||
-                            (idx === 2 && order.status === 'COMPLETED')
-                        return (
-                            <React.Fragment key={step.label}>
-                                <span className={isActive ? styles.sagaStepActive : styles.sagaStep}>
-                                    {step.label}
-                                </span>
-                                {idx < SAGA_STEPS.length - 1 && (
-                                    <span className={styles.sagaArrow}>→</span>
-                                )}
-                            </React.Fragment>
-                        )
-                    })}
-                    {isCancelled && (
-                        <>
-                            <span className={styles.sagaArrow}>→</span>
-                            <span className={styles.sagaStepActive}>취소됨</span>
-                        </>
-                    )}
                 </div>
             </div>
 

@@ -2,6 +2,7 @@ package com.msa.order.service;
 
 import com.msa.order.client.StockServiceClient;
 import com.msa.order.domain.Order;
+import com.msa.order.domain.OrderFailureReason;
 import com.msa.order.domain.OrderStatus;
 import com.msa.order.dto.CreateOrderRequest;
 import com.msa.order.dto.OrderResponse;
@@ -132,7 +133,7 @@ public class OrderService {
      * @throws NoSuchElementException 해당 ID의 주문이 없을 경우
      */
     @Transactional
-    public void cancelOrder(Long orderId, String reason) {
+    public void cancelOrder(Long orderId, OrderFailureReason reason) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new NoSuchElementException("주문을 찾을 수 없습니다. orderId: " + orderId));
 

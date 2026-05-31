@@ -4,6 +4,7 @@ import com.msa.common.event.PaymentCompletedEvent;
 import com.msa.common.event.PaymentFailedEvent;
 import com.msa.common.event.StockInsufficientEvent;
 import com.msa.common.kafka.KafkaTopics;
+import com.msa.order.domain.OrderFailureReason;
 import com.msa.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +40,7 @@ public class OrderEventConsumer {
     @KafkaListener(topics = KafkaTopics.PAYMENT_FAILED, groupId = "order-service", containerFactory = "kafkaListenerContainerFactory")
     public void handlePaymentFailed(PaymentFailedEvent event) {
         log.info("결제 실패 이벤트 수신 - orderId: {}, reason: {}", event.orderId(), event.reason());
-        orderService.cancelOrder(event.orderId(), event.reason());
+        orderService.cancelOrder(event.orderId(), OrderFailureReason.INSUFFICIENT_BALANCE);
     }
 
     /**
@@ -50,6 +51,6 @@ public class OrderEventConsumer {
     @KafkaListener(topics = KafkaTopics.STOCK_INSUFFICIENT, groupId = "order-service", containerFactory = "kafkaListenerContainerFactory")
     public void handleStockInsufficient(StockInsufficientEvent event) {
         log.info("재고 부족 이벤트 수신 - orderId: {}, reason: {}", event.orderId(), event.reason());
-        orderService.cancelOrder(event.orderId(), event.reason());
+        orderService.cancelOrder(event.orderId(), OrderFailureReason.STOCK_INSUFFICIENT);
     }
 }

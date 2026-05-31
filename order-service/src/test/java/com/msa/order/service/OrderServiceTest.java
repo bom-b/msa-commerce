@@ -3,6 +3,7 @@ package com.msa.order.service;
 import com.msa.common.event.OrderCreatedEvent;
 import com.msa.order.client.StockServiceClient;
 import com.msa.order.domain.Order;
+import com.msa.order.domain.OrderFailureReason;
 import com.msa.order.domain.OrderStatus;
 import com.msa.order.dto.CreateOrderRequest;
 import com.msa.order.dto.OrderResponse;
@@ -141,11 +142,11 @@ class OrderServiceTest {
         given(orderRepository.findById(1L)).willReturn(Optional.of(order));
 
         // when
-        orderService.cancelOrder(1L, "결제 실패");
+        orderService.cancelOrder(1L, OrderFailureReason.INSUFFICIENT_BALANCE);
 
         // then
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
-        assertThat(order.getFailureReason()).isEqualTo("결제 실패");
+        assertThat(order.getFailureReason()).isEqualTo(OrderFailureReason.INSUFFICIENT_BALANCE);
     }
 
     /**

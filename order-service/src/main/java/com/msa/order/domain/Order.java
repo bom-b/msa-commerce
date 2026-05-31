@@ -52,8 +52,9 @@ public class Order {
     private LocalDateTime createdAt;
 
     /** 주문 실패 사유. CANCELLED 상태일 때 설정된다. */
+    @Enumerated(EnumType.STRING)
     @Column
-    private String failureReason;
+    private OrderFailureReason failureReason;
 
     /**
      * 주문 엔티티 생성자 (빌더 전용).
@@ -89,7 +90,7 @@ public class Order {
      *
      * @param reason 취소 사유
      */
-    public void cancel(String reason) {
+    public void cancel(OrderFailureReason reason) {
         this.status = OrderStatus.CANCELLED;
         this.failureReason = reason;
     }
