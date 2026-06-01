@@ -64,7 +64,6 @@ msa-commerce/
 | Stock Service    | 8084 |
 | PostgreSQL       | 5432 |
 | Kafka            | 9092 |
-| Zookeeper        | 2181 |
 | Kafka UI         | 8090 |
 
 ---
@@ -112,52 +111,30 @@ PENDING → (payment.completed) → COMPLETED
 
 ## 각 서비스 상세 설계
 
-### 1. Auth Service (:8081)
-
-- **역할**: JWT 발급 + 사용자 예치금 관리
-- **인증**: DB 기반 (`users` 테이블), 초기 데이터: id=`test` / pw=`test`
-- **엔드포인트**:
-    - `POST /auth/login` → `{ token: "JWT..." }`
-    - `GET /auth/balance` — 내 예치금 잔액 조회
-    - `POST /auth/balance/charge` — 예치금 충전
-    - `POST /auth/balance/deduct` — 예치금 차감 (Payment Service 전용)
-- **JWT**: 만료시간 2시간, HS256 알고리즘
-- **DB**: `auth_db` (PostgreSQL) — `users`, `user_balances` 테이블
-
-### 2. API Gateway (:8080)
+### 1. API Gateway (:8080)
 
 - **역할**: 단일 진입점, JWT 검증, 라우팅
 - **JWT 필터**: Authorization 헤더 검증 → 각 서비스로 라우팅
-- **인증 제외**: `POST /auth/login`은 필터 미적용
-- **라우팅 규칙**: path prefix 기반 (`/auth/**`, `/orders/**`, `/payments/**`, `/stocks/**`)
+- 
+### 2. Auth Service (:8081)
+
+- **역할**: JWT 발급 + 사용자 예치금 관리
+- **DB**: `auth_db` (PostgreSQL)
 
 ### 3. Order Service (:8082)
 
+- **역할**: 주문 생성, 주문 상태 관리
 - **DB**: `order_db` (PostgreSQL)
-- **엔티티**: `Order` (id, userId, productId, quantity, status, failureReason, createdAt)
-- **엔드포인트**:
-    - `POST /orders` — 주문 생성 (Kafka: order.created 발행)
-    - `GET /orders/{id}` — 주문 조회
-    - `GET /orders` — 내 주문 목록
-- **Kafka 구독**: `payment.completed`, `payment.failed`, `stock.insufficient`
 
 ### 4. Payment Service (:8083)
 
+- **역할**: 결제 처리
 - **DB**: `payment_db` (PostgreSQL)
-- **엔티티**: `Payment` (id, orderId, amount, status, createdAt)
-- **엔드포인트**: `GET /payments/{orderId}` — 결제 조회
-- **Kafka 구독**: `stock.reserved` → Auth Service REST 호출로 예치금 차감 → 성공/실패에 따라 이벤트 발행
-- **Kafka 발행**: `payment.completed`, `payment.failed`
-- **Auth Service 의존**: 예치금 차감을 위해 `POST /auth/balance/deduct` REST 호출
 
 ### 5. Stock Service (:8084)
 
+- **역할**: 상품 관리, 재고 관리
 - **DB**: `stock_db` (PostgreSQL)
-- **엔티티**: `Stock` (id, productId, totalQuantity, availableQuantity), `StockReservation` (id, orderId, stock, reservedQuantity, status)
-- **엔드포인트**: `GET /stocks` — 재고 목록
-- **Kafka 구독**: `order.created` → 재고 예약, `payment.completed` → 예약 확정, `payment.failed` → 예약 취소
-- **Kafka 발행**: `stock.reserved`, `stock.insufficient`
-- **초기 데이터**: 상품 3~5개, 각 재고 100개
 
 ### 6. Frontend (:3000)
 
@@ -166,6 +143,8 @@ PENDING → (payment.completed) → COMPLETED
     - 상품/재고 목록 + 주문 생성 (`/`)
     - 내 주문 목록 (`/orders`)
     - 주문 상세 + 결제 상태 (`/orders/:id`)
+    - 재고 관리 (`/inventory`)
+    - 예치금 충전 (`/charge`)
 - **인증**: JWT를 localStorage에 저장, Axios 인터셉터로 자동 첨부
 
 ---
@@ -176,8 +155,7 @@ PENDING → (payment.completed) → COMPLETED
 
 ```yaml
 services:
-    zookeeper:     # Kafka 의존성
-    kafka:         # 메시지 브로커
+    kafka:         # 메시지 브로커 (KRaft 모드, Zookeeper 미사용)
     kafka-ui:      # Kafka 모니터링 (Provectuslabs)
     postgres:      # 단일 PostgreSQL 인스턴스 (DB 분리)
     auth-service:
@@ -186,6 +164,8 @@ services:
     payment-service:
     stock-service:
     frontend:
+    nginx:         # 내부 리버스 프록시
+    cloudflared:   # Cloudflare Tunnel (외부 진입점, host 포트 미노출)
 ```
 
 ### DB 분리 방식
