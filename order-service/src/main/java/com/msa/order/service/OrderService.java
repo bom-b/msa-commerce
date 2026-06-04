@@ -75,15 +75,16 @@ public class OrderService {
     }
 
     /**
-     * 주문 ID로 단건 주문을 조회한다.
+     * 요청자 본인 소유의 단건 주문을 조회한다.
      *
      * @param orderId 조회할 주문 ID
+     * @param userId  인증된 사용자 ID
      * @return 주문 응답 DTO
-     * @throws NoSuchElementException 해당 ID의 주문이 없을 경우
+     * @throws NoSuchElementException 주문이 없거나 요청자 소유가 아닐 경우
      */
     @Transactional(readOnly = true)
-    public OrderResponse getOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
+    public OrderResponse getOrder(Long orderId, Long userId) {
+        Order order = orderRepository.findByIdAndUserId(orderId, userId)
             .orElseThrow(() -> new NoSuchElementException("주문을 찾을 수 없습니다. orderId: " + orderId));
         return OrderResponse.from(order);
     }

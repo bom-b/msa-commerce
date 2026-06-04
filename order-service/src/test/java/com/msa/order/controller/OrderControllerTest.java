@@ -191,6 +191,33 @@ class OrderControllerTest {
     }
 
     /**
+     * GET /orders/{id} 타인 소유 주문 조회 시 404 테스트.
+     *
+     * @throws Exception MockMvc 요청 수행 시 발생할 수 있는 예외
+     */
+    @Test
+    @DisplayName("GET /orders/{id}: 타인 소유 주문 조회 시 404 응답")
+    void GET_orders_id_타인소유주문_404() throws Exception {
+        // given
+        Order saved =
+            orderRepository.save(
+                Order.builder()
+                    .userId(1L)
+                    .productId(1L)
+                    .productName("노트북")
+                    .quantity(2)
+                    .totalAmount(2000000L)
+                    .status(OrderStatus.PENDING)
+                    .createdAt(LocalDateTime.now())
+                    .build());
+
+        // when & then
+        mockMvc
+            .perform(get("/orders/{id}", saved.getId()).header("X-User-Id", "2"))
+            .andExpect(status().isNotFound());
+    }
+
+    /**
      * GET /orders/{id} 존재하지 않는 주문 조회 시 404 테스트.
      *
      * @throws Exception MockMvc 요청 수행 시 발생할 수 있는 예외

@@ -113,12 +113,56 @@ class OrderServiceTest {
     @DisplayName("getOrder: 존재하지 않는 주문 조회 시 NoSuchElementException 발생")
     void getOrder_존재하지않는주문_예외발생() {
         // given
-        given(orderRepository.findById(999L)).willReturn(Optional.empty());
+        given(orderRepository.findByIdAndUserId(999L, 1L)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> orderService.getOrder(999L))
+        assertThatThrownBy(() -> orderService.getOrder(999L, 1L))
             .isInstanceOf(NoSuchElementException.class)
             .hasMessageContaining("999");
+    }
+
+    /**
+     * 본인 소유 주문 조회 성공 테스트.
+     */
+    @Test
+    @DisplayName("getOrder: 본인 소유 주문 조회 성공")
+    void getOrder_본인소유주문_조회성공() {
+        // given
+        Order order = Order.builder()
+            .userId(1L)
+            .productId(1L)
+            .productName("노트북")
+            .quantity(2)
+            .totalAmount(2000000L)
+            .status(OrderStatus.PENDING)
+            .createdAt(LocalDateTime.now())
+            .build();
+        ReflectionTestUtils.setField(order, "id", 1L);
+
+        given(orderRepository.findByIdAndUserId(1L, 1L)).willReturn(Optional.of(order));
+
+        // when
+        OrderResponse response = orderService.getOrder(1L, 1L);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.id()).isEqualTo(1L);
+        assertThat(response.userId()).isEqualTo(1L);
+    }
+
+    /**
+     * 타인 소유 주문 조회 시 예외 발생 테스트.
+     */
+    @Test
+    @DisplayName("getOrder: 타인 소유 주문 조회 시 NoSuchElementException 발생")
+    void getOrder_타인소유주문_예외발생() {
+        // given
+        given(orderRepository.findByIdAndUserId(1L, 2L)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> orderService.getOrder(1L, 2L))
+            .isInstanceOf(NoSuchElementException.class)
+            .hasMessageContaining("1");
     }
 
     /**
