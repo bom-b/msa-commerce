@@ -67,6 +67,7 @@ class PaymentServiceTest {
 
         Payment savedPayment = Payment.builder()
             .orderId(1L)
+            .userId(1L)
             .amount(20000L)
             .status(PaymentStatus.COMPLETED)
             .createdAt(LocalDateTime.now())
@@ -124,6 +125,7 @@ class PaymentServiceTest {
 
         Payment failedPayment = Payment.builder()
             .orderId(1L)
+            .userId(1L)
             .amount(20000L)
             .status(PaymentStatus.FAILED)
             .createdAt(LocalDateTime.now())
@@ -148,24 +150,25 @@ class PaymentServiceTest {
     }
 
     /**
-     * 주문 ID로 결제 조회 성공 테스트.
+     * 본인 소유 주문 ID로 결제 조회 성공 테스트.
      */
     @Test
-    @DisplayName("getPaymentByOrderId: 존재하는 주문 ID 조회 시 PaymentResponse 반환")
+    @DisplayName("getPaymentByOrderId: 본인 소유의 존재하는 주문 ID 조회 시 PaymentResponse 반환")
     void getPaymentByOrderId_조회성공() {
         // given
         Payment payment = Payment.builder()
             .orderId(1L)
+            .userId(1L)
             .amount(20000L)
             .status(PaymentStatus.COMPLETED)
             .createdAt(LocalDateTime.now())
             .build();
         ReflectionTestUtils.setField(payment, "id", 100L);
 
-        given(paymentRepository.findByOrderId(1L)).willReturn(Optional.of(payment));
+        given(paymentRepository.findByOrderIdAndUserId(1L, 1L)).willReturn(Optional.of(payment));
 
         // when
-        PaymentResponse response = paymentService.getPaymentByOrderId(1L);
+        PaymentResponse response = paymentService.getPaymentByOrderId(1L, 1L);
 
         // then
         assertThat(response).isNotNull();
@@ -182,11 +185,26 @@ class PaymentServiceTest {
     @DisplayName("getPaymentByOrderId: 존재하지 않는 주문 ID 조회 시 NoSuchElementException 발생")
     void getPaymentByOrderId_존재하지않는주문_예외발생() {
         // given
-        given(paymentRepository.findByOrderId(999L)).willReturn(Optional.empty());
+        given(paymentRepository.findByOrderIdAndUserId(999L, 1L)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> paymentService.getPaymentByOrderId(999L))
+        assertThatThrownBy(() -> paymentService.getPaymentByOrderId(999L, 1L))
             .isInstanceOf(NoSuchElementException.class)
             .hasMessageContaining("999");
+    }
+
+    /**
+     * 타인 소유 결제를 조회하면 NoSuchElementException이 발생하는 소유권 검증 테스트.
+     */
+    @Test
+    @DisplayName("getPaymentByOrderId: 타인 소유 결제 조회 시 NoSuchElementException 발생")
+    void getPaymentByOrderId_타인소유_예외발생() {
+        // given
+        given(paymentRepository.findByOrderIdAndUserId(1L, 2L)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> paymentService.getPaymentByOrderId(1L, 2L))
+            .isInstanceOf(NoSuchElementException.class)
+            .hasMessageContaining("1");
     }
 }

@@ -88,6 +88,7 @@ class PaymentControllerTest {
         paymentRepository.save(
             Payment.builder()
                 .orderId(1L)
+                .userId(1L)
                 .amount(20000L)
                 .status(PaymentStatus.COMPLETED)
                 .createdAt(LocalDateTime.now())
@@ -112,6 +113,29 @@ class PaymentControllerTest {
     void GET_payments_orderId_존재하지않는주문_404() throws Exception {
         // when & then
         mockMvc.perform(get("/payments/{orderId}", 999L).header("X-User-Id", "1"))
+            .andExpect(status().isNotFound());
+    }
+
+    /**
+     * GET /payments/{orderId} 타인 소유 결제 조회 시 404 응답 테스트.
+     *
+     * @throws Exception MockMvc 요청 수행 시 발생할 수 있는 예외
+     */
+    @Test
+    @DisplayName("GET /payments/{orderId}: 타인 소유 결제 조회 시 404 응답")
+    void GET_payments_orderId_타인소유_404() throws Exception {
+        // given
+        paymentRepository.save(
+            Payment.builder()
+                .orderId(1L)
+                .userId(1L)
+                .amount(20000L)
+                .status(PaymentStatus.COMPLETED)
+                .createdAt(LocalDateTime.now())
+                .build());
+
+        // when & then
+        mockMvc.perform(get("/payments/{orderId}", 1L).header("X-User-Id", "2"))
             .andExpect(status().isNotFound());
     }
 

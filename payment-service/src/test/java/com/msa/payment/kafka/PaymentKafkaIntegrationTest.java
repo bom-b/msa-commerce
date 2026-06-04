@@ -99,9 +99,10 @@ class PaymentKafkaIntegrationTest {
         // then
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             assertThat(paymentRepository.existsByOrderId(orderId)).isTrue();
-            paymentRepository.findByOrderId(orderId).ifPresent(payment -> {
+            paymentRepository.findByOrderIdAndUserId(orderId, 1L).ifPresent(payment -> {
                 assertThat(payment.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
                 assertThat(payment.getAmount()).isEqualTo(30000L);
+                assertThat(payment.getUserId()).isEqualTo(1L);
             });
         });
     }
