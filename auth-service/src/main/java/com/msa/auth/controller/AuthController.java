@@ -7,6 +7,7 @@ import com.msa.auth.dto.LoginRequest;
 import com.msa.auth.dto.LoginResponse;
 import com.msa.auth.service.AuthService;
 import com.msa.common.auth.annotation.Authenticated;
+import com.msa.common.auth.annotation.InternalApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -72,6 +73,7 @@ public class AuthController {
      * @param request 차감할 사용자 ID와 금액
      * @return {@code 204 No Content}
      */
+    @InternalApi
     @PostMapping("/balance/deduct")
     public ResponseEntity<Void> deduct(@Valid @RequestBody DeductRequest request) {
         authService.deduct(request.userId(), request.amount());

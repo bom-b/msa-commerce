@@ -1,6 +1,7 @@
 package com.msa.common.config;
 
 import com.msa.common.auth.interceptor.AuthInterceptor;
+import com.msa.common.auth.interceptor.InternalApiInterceptor;
 import com.msa.common.auth.resolver.CurrentUserArgumentResolver;
 import com.msa.common.exception.GlobalExceptionHandler;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -12,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 /**
- * 공통 웹 MVC 설정. {@link AuthInterceptor}와 {@link CurrentUserArgumentResolver}를 자동으로 등록한다.
+ * 공통 웹 MVC 설정. {@link AuthInterceptor}, {@link InternalApiInterceptor}, {@link CurrentUserArgumentResolver}를 자동으로 등록한다.
  *
  * <p>{@code META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports}에
  * 등록되어 Spring Boot 자동 설정으로 활성화된다.
@@ -41,6 +42,16 @@ public class CommonWebConfig implements WebMvcConfigurer {
     }
 
     /**
+     * 내부 전용 API 인터셉터 빈.
+     *
+     * @return {@link InternalApiInterceptor} 인스턴스
+     */
+    @Bean
+    public InternalApiInterceptor internalApiInterceptor() {
+        return new InternalApiInterceptor();
+    }
+
+    /**
      * 현재 사용자 ArgumentResolver 빈.
      *
      * @return {@link CurrentUserArgumentResolver} 인스턴스
@@ -58,6 +69,7 @@ public class CommonWebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor());
+        registry.addInterceptor(internalApiInterceptor());
     }
 
     /**

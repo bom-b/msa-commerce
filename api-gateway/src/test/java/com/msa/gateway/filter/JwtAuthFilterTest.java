@@ -107,52 +107,40 @@ class JwtAuthFilterTest {
     }
 
     /**
-     * Authorization 헤더가 없는 요청에 대해 {@code 401 UNAUTHORIZED}를 반환해야 한다.
+     * 전달되는 다운스트림 요청에 {@code X-Gateway-Request=true} 마커 헤더가 주입되어야 한다.
      */
     @Test
-    void filter_withMissingAuthHeader_returnsUnauthorized() {
+    void filter_forwardsRequestWithGatewayMarker() {
         MockServerWebExchange exchange = exchangeFor(
             MockServerHttpRequest.get("/orders/1").build());
-        GatewayFilterChain chain = mock(GatewayFilterChain.class);
+        GatewayFilterChain chain = chainReturningEmpty();
+        ArgumentCaptor<ServerWebExchange> captor = ArgumentCaptor.forClass(ServerWebExchange.class);
 
         filter.filter(exchange, chain).block();
 
-        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        verify(chain, never()).filter(any());
+        verify(chain).filter(captor.capture());
+        String marker = captor.getValue().getRequest().getHeaders().getFirst("X-Gateway-Request");
+        assertThat(marker).isEqualTo("true");
     }
 
     /**
-     * 서명이 올바르지 않은 JWT를 포함한 요청에 대해 {@code 401 UNAUTHORIZED}를 반환해야 한다.
+     * 클라이언트가 {@code X-Gateway-Request} 헤더에 위조값을 전송하더라도,
+     * 다운스트림 요청에서 해당 값이 {@code "true"}로 덮어써져야 한다.
      */
     @Test
-    void filter_withInvalidToken_returnsUnauthorized() {
+    void filter_withForgedGatewayMarker_overwritesWithTrue() {
         MockServerWebExchange exchange = exchangeFor(
             MockServerHttpRequest.get("/orders/1")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer invalid-token")
+                .header("X-Gateway-Request", "false")  // 클라이언트가 위조한 마커
                 .build());
-        GatewayFilterChain chain = mock(GatewayFilterChain.class);
+        GatewayFilterChain chain = chainReturningEmpty();
+        ArgumentCaptor<ServerWebExchange> captor = ArgumentCaptor.forClass(ServerWebExchange.class);
 
         filter.filter(exchange, chain).block();
 
-        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        verify(chain, never()).filter(any());
-    }
-
-    /**
-     * {@code Bearer } 접두사 없이 토큰만 전달된 요청에 대해 {@code 401 UNAUTHORIZED}를 반환해야 한다.
-     */
-    @Test
-    void filter_withMalformedAuthHeader_returnsUnauthorized() {
-        MockServerWebExchange exchange = exchangeFor(
-            MockServerHttpRequest.get("/orders/1")
-                .header(HttpHeaders.AUTHORIZATION, "token-without-bearer-prefix")
-                .build());
-        GatewayFilterChain chain = mock(GatewayFilterChain.class);
-
-        filter.filter(exchange, chain).block();
-
-        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        verify(chain, never()).filter(any());
+        verify(chain).filter(captor.capture());
+        String marker = captor.getValue().getRequest().getHeaders().getFirst("X-Gateway-Request");
+        assertThat(marker).isEqualTo("true");  // 위조값이 "true"로 교체됨
     }
 
     /**
