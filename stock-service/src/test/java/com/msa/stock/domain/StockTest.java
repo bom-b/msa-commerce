@@ -32,7 +32,7 @@ class StockTest {
         Stock stock = Stock.builder().totalQuantity(900).availableQuantity(900).build();
         assertThatThrownBy(() -> stock.addQuantity(100))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("상한");
+                .hasMessageContaining("초과할 수 없습니다");
     }
 
     /**

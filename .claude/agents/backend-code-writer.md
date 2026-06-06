@@ -12,11 +12,21 @@ description: Spring Boot, Java, Kafka 등 백엔드 코드 작성 전담 에이�
 ## 코드 스타일
 
 - Lombok 적극 활용 (`@Getter`, `@Builder`, `@RequiredArgsConstructor`)
-- 불필요한 추상화 금지 — 현재 요구사항만 구현
 - DTO 클래스는 Record 타입으로 작성
 - SQL Injection 방지: JPA 파라미터 바인딩 사용
 - JWT Secret, DB 패스워드 등 민감 정보 하드코딩 금지
-- 
+
+## 설계 원칙 (필수)
+
+- **수정량이 적은 쉬운 방향이 아니라 정석적이고 유지보수하기 좋은 방향을 택한다.** 파일을 더 많이 고쳐야 하더라도 우아한 설계를 우선한다. 하드코딩(경로·매직값·분기) 대신 상수·설정·어노테이션 기반 선언적 방식을 사용한다.
+- 자세한 설계·보안 원칙은 `.claude/coding-standards.md`의 "설계·유지보수 원칙", "보안 기본 원칙"을 따른다.
+
+## 인가·보안 구현 체크리스트 (엔드포인트 추가/수정 시 필수)
+
+- `@Authenticated`(로그인 검증)만으로 충분하다고 가정하지 않는다. 리소스 소유권·권한을 별도로 검증한다.
+- `{id}` 단건 리소스를 다루는 조회·수정·삭제는 **요청자 소유인지 반드시 확인한다.** 조회 쿼리에 소유자 조건을 거는 방식을 우선한다(예: `findByIdAndUserId`). 타인 리소스는 404로 응답해 존재를 노출하지 않는다.
+- 권한 판단 기준은 요청 본문 값이 아니라 인증 컨텍스트(`@CurrentUser` / `X-User-Id`)다.
+
 ## JavaDoc 작성 규칙 (필수)
 
 - **모든 클래스, 메서드, 필드**에 JavaDoc(`/** ... */`) 형식으로 **한글** 주석을 작성한다
@@ -89,8 +99,12 @@ src/main/java/com/msa/{service}/
 - 통합 테스트: Controller 계층 (`@SpringBootTest` + MockMvc)
 - Kafka 테스트: `@EmbeddedKafka` 또는 Testcontainers Kafka
 - DB 테스트: Testcontainers PostgreSQL
+- **메서드명은 영문으로 작성한다.** 한글 메서드명을 사용하지 않는다. `대상_조건_기대결과` 형태의 영문 식별자로 의도를 표현한다 (예: `createOrder_withUnknownProduct_throwsNoSuchElementException`, `getOrderById_withOthersOrder_returns404`).
+- **모든 `@Test` 메서드에 한글 `@DisplayName`을 반드시 붙인다.** DisplayName은 테스트가 검증하는 시나리오를 한글로 서술한다 (예: `@DisplayName("타인 소유 주문 조회 시 404 응답")`).
+- **메서드명과 DisplayName은 실제 검증 내용과 일치해야 한다.** `returns201`이라면 본문에서 실제로 201을 검증하고, `throwsXxxException`이라면 해당 예외 타입을 검증한다.
+- `@DisplayName`을 사용하는 파일에는 `import org.junit.jupiter.api.DisplayName;`이 누락되지 않도록 한다.
 - **테스트 실행은 절대 하지 않는다** — 사용자가 명시적으로 요청한 경우에만 수행
-
+- 
 ## DB 설계 원칙
 
 ### FK 관계 및 정규화 (필수)
@@ -123,9 +137,10 @@ src/main/java/com/msa/{service}/
 ## 금지 사항
 
 - 테스트 실행 (사용자가 명시적으로 요청한 경우에만 실행)
-- 요구사항 범위를 초과하는 기능 추가
+- 요구사항 범위를 초과하는 **기능** 추가 (단, 보안·인가·예외 처리·유지보수성 같은 품질 속성은 범위 초과가 아니므로 반드시 충족한다)
 - 서비스 간 DB 공유
 - 서비스 간 직접 REST 호출 (Kafka 이벤트 사용)
+- 하드코딩으로 때우기 — 선언적·설정 기반 방식이 있으면 그쪽을 택한다
 
 ## 작업 완료 시 보고 형식
 

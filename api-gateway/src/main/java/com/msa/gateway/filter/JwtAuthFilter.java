@@ -29,6 +29,9 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class JwtAuthFilter implements GlobalFilter, Ordered {
 
+    /** 게이트웨이가 전달하는 요청에 주입하는 마커 헤더명. */
+    private static final String GATEWAY_HEADER = "X-Gateway-Request";
+
     /** JWT 설정 프로퍼티. */
     private final JwtProperties jwtProperties;
 
@@ -46,14 +49,15 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
         // 클라이언트가 X-User-Id를 위조하지 못하도록 항상 제거
         ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate()
-            .headers(h -> h.remove("X-User-Id"));
+            .headers(h -> h.remove("X-User-Id"))
+            .headers(h -> h.set(GATEWAY_HEADER, "true"));
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             try {
                 Claims claims = parseToken(authHeader.substring(7));
                 requestBuilder.headers(h -> h.set("X-User-Id", claims.getSubject()));
             } catch (Exception e) {
-                log.warn("JWT 파싱 실패 (요청은 계속 처리): {}", e.getMessage());
+                log.warn("JWT 파싱 실패 : {}", e.getMessage());
             }
         }
 
@@ -68,8 +72,8 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
      * @throws io.jsonwebtoken.JwtException 토큰이 유효하지 않거나 만료된 경우
      */
     private Claims parseToken(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(
-            jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+        SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+
         return Jwts.parser()
             .verifyWith(key)
             .build()

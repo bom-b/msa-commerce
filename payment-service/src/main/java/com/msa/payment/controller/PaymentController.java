@@ -1,6 +1,7 @@
 package com.msa.payment.controller;
 
 import com.msa.common.auth.annotation.Authenticated;
+import com.msa.common.auth.annotation.CurrentUser;
 import com.msa.payment.dto.PaymentResponse;
 import com.msa.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -25,14 +26,15 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     /**
-     * 주문 ID로 결제를 조회한다.
+     * 주문 ID로 본인 소유의 결제를 조회한다.
      *
+     * @param userId  X-User-Id 헤더에서 추출한 인증된 사용자 ID
      * @param orderId 조회할 주문 ID
      * @return 200 OK + 결제 응답 DTO
      */
     @Authenticated
     @GetMapping("/{orderId}")
-    public ResponseEntity<PaymentResponse> getPayment(@PathVariable Long orderId) {
-        return ResponseEntity.ok(paymentService.getPaymentByOrderId(orderId));
+    public ResponseEntity<PaymentResponse> getPayment(@CurrentUser Long userId, @PathVariable Long orderId) {
+        return ResponseEntity.ok(paymentService.getPaymentByOrderId(orderId, userId));
     }
 }

@@ -33,6 +33,10 @@ public class Payment {
     @Column(nullable = false, unique = true)
     private Long orderId;
 
+    /** 주문자 ID. */
+    @Column(nullable = false)
+    private Long userId;
+
     /** 결제 금액 (원화). */
     @Column(nullable = false)
     private Long amount;
@@ -50,13 +54,15 @@ public class Payment {
      * 결제 엔티티 생성자 (빌더 전용).
      *
      * @param orderId   주문 ID
+     * @param userId    주문자 ID
      * @param amount    결제 금액
      * @param status    결제 상태
      * @param createdAt 생성 일시
      */
     @Builder
-    private Payment(Long orderId, Long amount, PaymentStatus status, LocalDateTime createdAt) {
+    private Payment(Long orderId, Long userId, Long amount, PaymentStatus status, LocalDateTime createdAt) {
         this.orderId = orderId;
+        this.userId = userId;
         this.amount = amount;
         this.status = status;
         this.createdAt = createdAt;

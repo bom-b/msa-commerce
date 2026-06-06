@@ -87,7 +87,7 @@ class PaymentKafkaIntegrationTest {
      */
     @Test
     @DisplayName("stock.reserved 이벤트 수신 후 결제 레코드 COMPLETED 상태로 생성")
-    void stockReserved_이벤트_수신_결제_생성() {
+    void stockReserved_onEventReceived_createsCompletedPayment() {
         // given
         Long orderId = 42L;
         StockReservedEvent event = new StockReservedEvent(
@@ -99,9 +99,10 @@ class PaymentKafkaIntegrationTest {
         // then
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             assertThat(paymentRepository.existsByOrderId(orderId)).isTrue();
-            paymentRepository.findByOrderId(orderId).ifPresent(payment -> {
+            paymentRepository.findByOrderIdAndUserId(orderId, 1L).ifPresent(payment -> {
                 assertThat(payment.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
                 assertThat(payment.getAmount()).isEqualTo(30000L);
+                assertThat(payment.getUserId()).isEqualTo(1L);
             });
         });
     }
@@ -111,7 +112,7 @@ class PaymentKafkaIntegrationTest {
      */
     @Test
     @DisplayName("stock.reserved 이벤트 중복 수신 시 결제 레코드 1건만 생성 (멱등성)")
-    void stockReserved_이벤트_중복_멱등성() {
+    void stockReserved_onDuplicateEvent_createsSinglePayment() {
         // given
         Long orderId = 99L;
         StockReservedEvent event = new StockReservedEvent(

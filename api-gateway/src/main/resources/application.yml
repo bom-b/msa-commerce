@@ -16,12 +16,6 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
       routes:
-        - id: auth-deduct-blocked
-          uri: no://op
-          predicates:
-            - Path=/api/auth/balance/deduct
-          filters:
-            - SetStatus=403
         - id: auth-service
           uri: http://${AUTH_SERVICE_HOST:localhost}:8081
           predicates:

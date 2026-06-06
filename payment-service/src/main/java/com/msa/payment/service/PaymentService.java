@@ -44,6 +44,7 @@ public class PaymentService {
 
         Payment payment = Payment.builder()
             .orderId(event.orderId())
+            .userId(event.userId())
             .amount(event.totalAmount())
             .status(PaymentStatus.PENDING)
             .createdAt(LocalDateTime.now())
@@ -65,15 +66,16 @@ public class PaymentService {
     }
 
     /**
-     * 주문 ID로 결제를 조회한다.
+     * 주문 ID로 요청자 본인 소유의 결제를 조회한다.
      *
      * @param orderId 조회할 주문 ID
+     * @param userId  인증된 사용자 ID
      * @return 결제 응답 DTO
-     * @throws NoSuchElementException 해당 주문 ID의 결제가 없을 경우
+     * @throws NoSuchElementException 본인 소유의 해당 주문 ID 결제가 없을 경우
      */
     @Transactional(readOnly = true)
-    public PaymentResponse getPaymentByOrderId(Long orderId) {
-        Payment payment = paymentRepository.findByOrderId(orderId)
+    public PaymentResponse getPaymentByOrderId(Long orderId, Long userId) {
+        Payment payment = paymentRepository.findByOrderIdAndUserId(orderId, userId)
             .orElseThrow(() -> new NoSuchElementException("결제를 찾을 수 없습니다. orderId: " + orderId));
         return PaymentResponse.from(payment);
     }

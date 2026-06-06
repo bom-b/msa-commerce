@@ -83,11 +83,12 @@ class PaymentControllerTest {
      */
     @Test
     @DisplayName("GET /payments/{orderId}: 존재하는 주문 ID 조회 시 200 응답 및 결제 정보 반환")
-    void GET_payments_orderId_조회성공() throws Exception {
+    void getPaymentByOrderId_returnsPayment() throws Exception {
         // given
         paymentRepository.save(
             Payment.builder()
                 .orderId(1L)
+                .userId(1L)
                 .amount(20000L)
                 .status(PaymentStatus.COMPLETED)
                 .createdAt(LocalDateTime.now())
@@ -109,9 +110,32 @@ class PaymentControllerTest {
      */
     @Test
     @DisplayName("GET /payments/{orderId}: 존재하지 않는 주문 ID 조회 시 404 응답")
-    void GET_payments_orderId_존재하지않는주문_404() throws Exception {
+    void getPaymentByOrderId_withUnknownOrder_returns404() throws Exception {
         // when & then
         mockMvc.perform(get("/payments/{orderId}", 999L).header("X-User-Id", "1"))
+            .andExpect(status().isNotFound());
+    }
+
+    /**
+     * GET /payments/{orderId} 타인 소유 결제 조회 시 404 응답 테스트.
+     *
+     * @throws Exception MockMvc 요청 수행 시 발생할 수 있는 예외
+     */
+    @Test
+    @DisplayName("GET /payments/{orderId}: 타인 소유 결제 조회 시 404 응답")
+    void getPaymentByOrderId_withOthersPayment_returns404() throws Exception {
+        // given
+        paymentRepository.save(
+            Payment.builder()
+                .orderId(1L)
+                .userId(1L)
+                .amount(20000L)
+                .status(PaymentStatus.COMPLETED)
+                .createdAt(LocalDateTime.now())
+                .build());
+
+        // when & then
+        mockMvc.perform(get("/payments/{orderId}", 1L).header("X-User-Id", "2"))
             .andExpect(status().isNotFound());
     }
 
@@ -122,7 +146,7 @@ class PaymentControllerTest {
      */
     @Test
     @DisplayName("GET /payments/{orderId}: X-User-Id 헤더 누락 시 401 응답")
-    void GET_payments_orderId_XUserId헤더_누락_401() throws Exception {
+    void getPaymentByOrderId_withoutUserIdHeader_returns401() throws Exception {
         // when & then
         mockMvc.perform(get("/payments/{orderId}", 1L))
             .andExpect(status().isUnauthorized());

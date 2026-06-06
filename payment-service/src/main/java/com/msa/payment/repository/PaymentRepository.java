@@ -11,12 +11,13 @@ import java.util.Optional;
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     /**
-     * 주문 ID로 결제를 조회한다.
+     * 주문 ID와 주문자 ID로 결제를 조회한다.
      *
      * @param orderId 조회할 주문 ID
+     * @param userId  조회할 주문자 ID
      * @return 결제 Optional 객체
      */
-    Optional<Payment> findByOrderId(Long orderId);
+    Optional<Payment> findByOrderIdAndUserId(Long orderId, Long userId);
 
     /**
      * 주문 ID에 해당하는 결제 존재 여부를 반환한다.

@@ -44,15 +44,16 @@ public class OrderController {
     }
 
     /**
-     * 주문 ID로 단건 주문을 조회한다.
+     * 주문 ID로 본인 소유의 단건 주문을 조회한다.
      *
-     * @param id 조회할 주문 ID
+     * @param userId X-User-Id 헤더에서 추출한 인증된 사용자 ID
+     * @param id     조회할 주문 ID
      * @return 200 OK + 주문 응답 DTO
      */
     @Authenticated
     @GetMapping("/{id}")
-    public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {
-        return ResponseEntity.ok(orderService.getOrder(id));
+    public ResponseEntity<OrderResponse> getOrder(@CurrentUser Long userId, @PathVariable Long id) {
+        return ResponseEntity.ok(orderService.getOrder(id, userId));
     }
 
     /**
