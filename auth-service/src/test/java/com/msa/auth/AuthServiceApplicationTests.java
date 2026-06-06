@@ -16,7 +16,8 @@ import org.springframework.test.context.TestPropertySource;
         "spring.datasource.username=sa",
         "spring.datasource.password=",
         "spring.jpa.hibernate.ddl-auto=create-drop",
-        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect"
+        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect",
+        "spring.sql.init.mode=never"
     })
 class AuthServiceApplicationTests {
 
