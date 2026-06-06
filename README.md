@@ -2,6 +2,10 @@
 
 MSA 아키텍처와 Apache Kafka 이벤트 드리븐 패턴을 학습하기 위해 만든 샘플 커머스 프로젝트입니다.
 
+🔗 **배포 링크**: [https://msa.bombi.cloud](https://msa.bombi.cloud/)
+
+<img src="./docs/images/screenshot.png" width="1000"  alt="스크린샷"/>
+
 ---
 
 ## 기술 스택
