@@ -126,7 +126,7 @@ class StockServiceTest {
      */
     @Test
     @DisplayName("reserveStock: 재고 충분 시 예약 생성 및 stock.reserved 이벤트 발행, totalAmount 전달 검증")
-    void reserveStock_재고충분_이벤트발행() {
+    void reserveStock_withSufficientStock_publishesStockReservedEvent() {
         // given
         Product product = Product.builder().id(10L).productName("노트북").price(1000000L).build();
         Stock stock = Stock.builder().id(1L).product(product).totalQuantity(100).availableQuantity(5).build();
@@ -157,7 +157,7 @@ class StockServiceTest {
      */
     @Test
     @DisplayName("reserveStock: 재고 부족 시 예약 생성 않고 stock.insufficient 이벤트 발행")
-    void reserveStock_재고부족_이벤트발행() {
+    void reserveStock_withInsufficientStock_publishesStockInsufficientEvent() {
         // given
         Product product = Product.builder().id(10L).productName("노트북").price(1000000L).build();
         Stock stock = Stock.builder().id(1L).product(product).totalQuantity(100).availableQuantity(1).build();
@@ -185,7 +185,7 @@ class StockServiceTest {
      */
     @Test
     @DisplayName("addStock: 입고 시 총 재고와 가용 재고 모두 증가 및 갱신 DTO 반환")
-    void addStock_재고증가_DTO반환() {
+    void addStock_increasesQuantity_returnsUpdatedDto() {
         // given
         Product product = Product.builder().id(10L).productName("노트북").imageName("notebook.webp").price(1000000L).build();
         Stock stock = Stock.builder().id(1L).product(product).totalQuantity(100).availableQuantity(80).build();
@@ -206,7 +206,7 @@ class StockServiceTest {
      */
     @Test
     @DisplayName("addStock: 존재하지 않는 상품이면 NoSuchElementException 발생")
-    void addStock_상품없음_예외() {
+    void addStock_withUnknownProduct_throwsNoSuchElementException() {
         // given
         given(stockRepository.findByProductIdWithProduct(999L)).willReturn(Optional.empty());
 

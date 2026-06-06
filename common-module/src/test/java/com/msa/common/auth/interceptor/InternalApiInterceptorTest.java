@@ -2,6 +2,7 @@ package com.msa.common.auth.interceptor;
 
 import com.msa.common.auth.annotation.InternalApi;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -37,6 +38,7 @@ class InternalApiInterceptorTest {
      * @throws Exception 핸들러 메서드 조회 또는 응답 쓰기 중 오류 발생 시
      */
     @Test
+    @DisplayName("내부 전용 API에 게이트웨이 마커 헤더가 있으면 403으로 차단")
     void preHandle_internalApiWithGatewayHeader_blocksWith403() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(GATEWAY_HEADER, "true");
@@ -55,6 +57,7 @@ class InternalApiInterceptorTest {
      * @throws Exception 핸들러 메서드 조회 또는 응답 쓰기 중 오류 발생 시
      */
     @Test
+    @DisplayName("내부 전용 API에 게이트웨이 마커 헤더가 없으면 통과")
     void preHandle_internalApiWithoutGatewayHeader_passes() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -72,6 +75,7 @@ class InternalApiInterceptorTest {
      * @throws Exception 핸들러 메서드 조회 또는 응답 쓰기 중 오류 발생 시
      */
     @Test
+    @DisplayName("일반 API는 게이트웨이 마커와 무관하게 통과")
     void preHandle_nonInternalApiHandler_passes() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(GATEWAY_HEADER, "true");
@@ -89,6 +93,7 @@ class InternalApiInterceptorTest {
      * @throws Exception 응답 쓰기 중 오류 발생 시
      */
     @Test
+    @DisplayName("HandlerMethod가 아니면 검사 없이 통과")
     void preHandle_nonHandlerMethod_passes() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(GATEWAY_HEADER, "true");

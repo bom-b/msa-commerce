@@ -4,13 +4,13 @@ import com.msa.gateway.config.JwtProperties;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
@@ -52,6 +52,7 @@ class JwtAuthFilterTest {
      * 화이트리스트 경로({@code /auth/login})에 대한 요청은 JWT 검증 없이 다음 필터로 전달되어야 한다.
      */
     @Test
+    @DisplayName("화이트리스트 경로는 JWT 검증 없이 다음 필터로 전달")
     void filter_whitelistedPath_skipsAuthentication() {
         MockServerWebExchange exchange = exchangeFor(
             MockServerHttpRequest.post("/auth/login").build());
@@ -67,6 +68,7 @@ class JwtAuthFilterTest {
      * 다운스트림 요청의 {@code X-User-Id} 헤더에 JWT subject 값이 설정되어야 한다.
      */
     @Test
+    @DisplayName("유효한 토큰 요청 시 X-User-Id 헤더에 subject 설정 후 전달")
     void filter_withValidToken_forwardsRequestWithUserId() {
         String token = createToken("test");
         MockServerWebExchange exchange = exchangeFor(
@@ -88,6 +90,7 @@ class JwtAuthFilterTest {
      * 다운스트림 요청에서 해당 값이 JWT subject 값으로 교체되어야 한다.
      */
     @Test
+    @DisplayName("위조된 X-User-Id 헤더는 JWT subject 값으로 교체")
     void filter_withForgedUserIdHeader_replacesWithJwtSubject() {
         String token = createToken("test");
         MockServerWebExchange exchange = exchangeFor(
@@ -110,6 +113,7 @@ class JwtAuthFilterTest {
      * 전달되는 다운스트림 요청에 {@code X-Gateway-Request=true} 마커 헤더가 주입되어야 한다.
      */
     @Test
+    @DisplayName("전달 요청에 X-Gateway-Request 마커 헤더 주입")
     void filter_forwardsRequestWithGatewayMarker() {
         MockServerWebExchange exchange = exchangeFor(
             MockServerHttpRequest.get("/orders/1").build());
@@ -128,6 +132,7 @@ class JwtAuthFilterTest {
      * 다운스트림 요청에서 해당 값이 {@code "true"}로 덮어써져야 한다.
      */
     @Test
+    @DisplayName("위조된 게이트웨이 마커는 true로 덮어쓰기")
     void filter_withForgedGatewayMarker_overwritesWithTrue() {
         MockServerWebExchange exchange = exchangeFor(
             MockServerHttpRequest.get("/orders/1")

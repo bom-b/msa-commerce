@@ -99,8 +99,12 @@ src/main/java/com/msa/{service}/
 - 통합 테스트: Controller 계층 (`@SpringBootTest` + MockMvc)
 - Kafka 테스트: `@EmbeddedKafka` 또는 Testcontainers Kafka
 - DB 테스트: Testcontainers PostgreSQL
+- **메서드명은 영문으로 작성한다.** 한글 메서드명을 사용하지 않는다. `대상_조건_기대결과` 형태의 영문 식별자로 의도를 표현한다 (예: `createOrder_withUnknownProduct_throwsNoSuchElementException`, `getOrderById_withOthersOrder_returns404`).
+- **모든 `@Test` 메서드에 한글 `@DisplayName`을 반드시 붙인다.** DisplayName은 테스트가 검증하는 시나리오를 한글로 서술한다 (예: `@DisplayName("타인 소유 주문 조회 시 404 응답")`).
+- **메서드명과 DisplayName은 실제 검증 내용과 일치해야 한다.** `returns201`이라면 본문에서 실제로 201을 검증하고, `throwsXxxException`이라면 해당 예외 타입을 검증한다.
+- `@DisplayName`을 사용하는 파일에는 `import org.junit.jupiter.api.DisplayName;`이 누락되지 않도록 한다.
 - **테스트 실행은 절대 하지 않는다** — 사용자가 명시적으로 요청한 경우에만 수행
-
+- 
 ## DB 설계 원칙
 
 ### FK 관계 및 정규화 (필수)

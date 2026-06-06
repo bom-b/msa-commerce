@@ -59,7 +59,7 @@ class PaymentServiceTest {
      */
     @Test
     @DisplayName("processPayment: 재고 확보 완료 이벤트 수신 시 결제 생성 및 completed 이벤트 발행")
-    void processPayment_결제생성_및_이벤트발행() {
+    void processPayment_createsPaymentAndPublishesCompletedEvent() {
         // given
         StockReservedEvent event = new StockReservedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, 20000L);
 
@@ -97,7 +97,7 @@ class PaymentServiceTest {
      */
     @Test
     @DisplayName("processPayment: 이미 처리된 orderId이면 결제 처리를 스킵한다")
-    void processPayment_중복이벤트_스킵() {
+    void processPayment_withDuplicateOrderId_skips() {
         // given
         StockReservedEvent event = new StockReservedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, 20000L);
         given(paymentRepository.existsByOrderId(1L)).willReturn(true);
@@ -116,7 +116,7 @@ class PaymentServiceTest {
      */
     @Test
     @DisplayName("processPayment: 잔액 부족 시 Payment(FAILED) 저장 및 payment.failed 이벤트 발행")
-    void processPayment_잔액부족_실패처리() {
+    void processPayment_withInsufficientBalance_savesFailedPaymentAndPublishesFailedEvent() {
         // given
         StockReservedEvent event = new StockReservedEvent(UUID.randomUUID(), 1L, 1L, 10L, 2, 20000L);
         given(paymentRepository.existsByOrderId(1L)).willReturn(false);
@@ -154,7 +154,7 @@ class PaymentServiceTest {
      */
     @Test
     @DisplayName("getPaymentByOrderId: 본인 소유의 존재하는 주문 ID 조회 시 PaymentResponse 반환")
-    void getPaymentByOrderId_조회성공() {
+    void getPaymentByOrderId_returnsPaymentResponse() {
         // given
         Payment payment = Payment.builder()
             .orderId(1L)
@@ -183,7 +183,7 @@ class PaymentServiceTest {
      */
     @Test
     @DisplayName("getPaymentByOrderId: 존재하지 않는 주문 ID 조회 시 NoSuchElementException 발생")
-    void getPaymentByOrderId_존재하지않는주문_예외발생() {
+    void getPaymentByOrderId_withUnknownOrder_throwsNoSuchElementException() {
         // given
         given(paymentRepository.findByOrderIdAndUserId(999L, 1L)).willReturn(Optional.empty());
 
@@ -198,7 +198,7 @@ class PaymentServiceTest {
      */
     @Test
     @DisplayName("getPaymentByOrderId: 타인 소유 결제 조회 시 NoSuchElementException 발생")
-    void getPaymentByOrderId_타인소유_예외발생() {
+    void getPaymentByOrderId_withOthersPayment_throwsNoSuchElementException() {
         // given
         given(paymentRepository.findByOrderIdAndUserId(1L, 2L)).willReturn(Optional.empty());
 

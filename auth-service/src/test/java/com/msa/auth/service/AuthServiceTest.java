@@ -8,6 +8,7 @@ import com.msa.auth.dto.LoginResponse;
 import com.msa.auth.repository.UserBalanceRepository;
 import com.msa.auth.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -60,6 +61,7 @@ class AuthServiceTest {
      * 올바른 자격증명으로 로그인 시 비어있지 않은 JWT가 반환되어야 한다.
      */
     @Test
+    @DisplayName("올바른 자격증명으로 로그인 시 비어있지 않은 토큰 반환")
     void login_withValidCredentials_returnsNonBlankToken() {
         when(userRepository.findByUsername("test"))
             .thenReturn(Optional.of(new User(1L, "test", "test")));
@@ -74,6 +76,7 @@ class AuthServiceTest {
      * 존재하지 않는 ID로 로그인 시 {@code 401 UNAUTHORIZED} 예외가 발생해야 한다.
      */
     @Test
+    @DisplayName("존재하지 않는 ID로 로그인 시 401 예외 발생")
     void login_withInvalidId_throwsUnauthorized() {
         when(userRepository.findByUsername("wrong")).thenReturn(Optional.empty());
         LoginRequest request = loginRequest("wrong", "test");
@@ -89,6 +92,7 @@ class AuthServiceTest {
      * 올바르지 않은 비밀번호로 로그인 시 {@code 401 UNAUTHORIZED} 예외가 발생해야 한다.
      */
     @Test
+    @DisplayName("올바르지 않은 비밀번호로 로그인 시 401 예외 발생")
     void login_withInvalidPassword_throwsUnauthorized() {
         when(userRepository.findByUsername("test"))
             .thenReturn(Optional.of(new User(1L, "test", "test")));
@@ -105,6 +109,7 @@ class AuthServiceTest {
      * 존재하는 사용자 ID로 예치금 조회 시 잔액이 반환되어야 한다.
      */
     @Test
+    @DisplayName("존재하는 사용자 ID로 예치금 조회 시 잔액 반환")
     void getBalance_withValidUserId_returnsBalance() {
         User user = new User(1L, "test", "test");
         UserBalance userBalance = UserBalance.builder()
@@ -124,6 +129,7 @@ class AuthServiceTest {
      * 예치금 정보가 없는 사용자 ID로 조회 시 {@link NoSuchElementException}이 발생해야 한다.
      */
     @Test
+    @DisplayName("예치금 정보가 없는 사용자 조회 시 NoSuchElementException 발생")
     void getBalance_withNotFoundUserId_throwsNoSuchElementException() {
         when(userBalanceRepository.findByUser_Id(99L)).thenReturn(Optional.empty());
 
@@ -135,6 +141,7 @@ class AuthServiceTest {
      * 유효한 금액으로 충전 시 충전 후 잔액이 반환되어야 한다.
      */
     @Test
+    @DisplayName("유효한 금액 충전 시 갱신된 잔액 반환")
     void charge_withValidAmount_returnsUpdatedBalance() {
         User user = new User(1L, "test", "test");
         UserBalance userBalance = UserBalance.builder()
@@ -153,6 +160,7 @@ class AuthServiceTest {
      * 0 이하 금액으로 충전 시 {@link IllegalArgumentException}이 발생해야 한다.
      */
     @Test
+    @DisplayName("0원 충전 시 IllegalArgumentException 발생")
     void charge_withZeroAmount_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> authService.charge(1L, 0L))
             .isInstanceOf(IllegalArgumentException.class);
@@ -162,6 +170,7 @@ class AuthServiceTest {
      * 음수 금액으로 충전 시 {@link IllegalArgumentException}이 발생해야 한다.
      */
     @Test
+    @DisplayName("음수 금액 충전 시 IllegalArgumentException 발생")
     void charge_withNegativeAmount_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> authService.charge(1L, -1000L))
             .isInstanceOf(IllegalArgumentException.class);
@@ -171,6 +180,7 @@ class AuthServiceTest {
      * 잔액이 충분한 사용자에게 deduct 호출 시 정상 차감되어야 한다.
      */
     @Test
+    @DisplayName("잔액이 충분하면 차감에 성공")
     void deduct_withSufficientBalance_deductsAmount() {
         User user = new User(1L, "test", "test");
         UserBalance userBalance = UserBalance.builder()
@@ -189,6 +199,7 @@ class AuthServiceTest {
      * 잔액이 부족한 경우 deduct 호출 시 {@link IllegalArgumentException}이 발생해야 한다.
      */
     @Test
+    @DisplayName("잔액이 부족하면 IllegalArgumentException 발생")
     void deduct_withInsufficientBalance_throwsIllegalArgumentException() {
         User user = new User(1L, "test", "test");
         UserBalance userBalance = UserBalance.builder()
@@ -207,6 +218,7 @@ class AuthServiceTest {
      * 예치금 정보가 없는 사용자에게 deduct 호출 시 {@link NoSuchElementException}이 발생해야 한다.
      */
     @Test
+    @DisplayName("예치금 정보가 없는 사용자 차감 시 NoSuchElementException 발생")
     void deduct_withNotFoundUserId_throwsNoSuchElementException() {
         when(userBalanceRepository.findByUser_Id(99L)).thenReturn(Optional.empty());
 

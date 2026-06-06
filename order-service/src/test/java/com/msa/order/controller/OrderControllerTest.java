@@ -117,7 +117,7 @@ class OrderControllerTest {
      */
     @Test
     @DisplayName("POST /orders: 주문 생성 성공 시 201 응답 및 orderId 반환")
-    void POST_orders_주문생성_성공() throws Exception {
+    void postOrders_createsOrder_returns201() throws Exception {
         // given
         CreateOrderRequest request = new CreateOrderRequest(1L, 2);
         given(stockServiceClient.getStock(anyLong()))
@@ -147,7 +147,7 @@ class OrderControllerTest {
      */
     @Test
     @DisplayName("POST /orders: X-User-Id 헤더 누락 시 401 응답")
-    void POST_orders_XUserId헤더_누락_401() throws Exception {
+    void postOrders_withoutUserIdHeader_returns401() throws Exception {
         // given
         CreateOrderRequest request = new CreateOrderRequest(1L, 2);
 
@@ -167,7 +167,7 @@ class OrderControllerTest {
      */
     @Test
     @DisplayName("GET /orders/{id}: 존재하는 주문 조회 시 200 응답 및 주문 정보 반환")
-    void GET_orders_id_주문조회_성공() throws Exception {
+    void getOrderById_returnsOrder() throws Exception {
         // given
         Order saved =
             orderRepository.save(
@@ -197,7 +197,7 @@ class OrderControllerTest {
      */
     @Test
     @DisplayName("GET /orders/{id}: 타인 소유 주문 조회 시 404 응답")
-    void GET_orders_id_타인소유주문_404() throws Exception {
+    void getOrderById_withOthersOrder_returns404() throws Exception {
         // given
         Order saved =
             orderRepository.save(
@@ -224,7 +224,7 @@ class OrderControllerTest {
      */
     @Test
     @DisplayName("GET /orders/{id}: 존재하지 않는 주문 조회 시 404 응답")
-    void GET_orders_id_존재하지않는주문_404() throws Exception {
+    void getOrderById_withUnknownOrder_returns404() throws Exception {
         // when & then
         mockMvc
             .perform(get("/orders/{id}", 999L).header("X-User-Id", "1"))
@@ -238,7 +238,7 @@ class OrderControllerTest {
      */
     @Test
     @DisplayName("GET /orders: X-User-Id 헤더 누락 시 401 응답")
-    void GET_orders_XUserId헤더_누락_401() throws Exception {
+    void getOrders_withoutUserIdHeader_returns401() throws Exception {
         // when & then
         mockMvc.perform(get("/orders")).andExpect(status().isUnauthorized());
     }

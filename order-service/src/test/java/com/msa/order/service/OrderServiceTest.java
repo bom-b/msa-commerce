@@ -55,7 +55,7 @@ class OrderServiceTest {
      */
     @Test
     @DisplayName("createOrder: 주문 생성 성공 시 저장 및 이벤트 발행 호출 검증")
-    void createOrder_주문생성_성공() {
+    void createOrder_savesOrderAndPublishesEvent() {
         // given
         CreateOrderRequest request = new CreateOrderRequest(1L, 2);
 
@@ -95,7 +95,7 @@ class OrderServiceTest {
      */
     @Test
     @DisplayName("createOrder: 존재하지 않는 상품 조회 시 NoSuchElementException 발생")
-    void createOrder_존재하지않는상품_예외발생() {
+    void createOrder_withUnknownProduct_throwsNoSuchElementException() {
         // given
         given(stockServiceClient.getStock(999L))
             .willThrow(new NoSuchElementException("상품을 찾을 수 없습니다. productId: 999"));
@@ -111,7 +111,7 @@ class OrderServiceTest {
      */
     @Test
     @DisplayName("getOrder: 존재하지 않는 주문 조회 시 NoSuchElementException 발생")
-    void getOrder_존재하지않는주문_예외발생() {
+    void getOrder_withUnknownOrder_throwsNoSuchElementException() {
         // given
         given(orderRepository.findByIdAndUserId(999L, 1L)).willReturn(Optional.empty());
 
@@ -126,7 +126,7 @@ class OrderServiceTest {
      */
     @Test
     @DisplayName("getOrder: 본인 소유 주문 조회 성공")
-    void getOrder_본인소유주문_조회성공() {
+    void getOrder_withOwnOrder_returnsOrder() {
         // given
         Order order = Order.builder()
             .userId(1L)
@@ -155,7 +155,7 @@ class OrderServiceTest {
      */
     @Test
     @DisplayName("getOrder: 타인 소유 주문 조회 시 NoSuchElementException 발생")
-    void getOrder_타인소유주문_예외발생() {
+    void getOrder_withOthersOrder_throwsNoSuchElementException() {
         // given
         given(orderRepository.findByIdAndUserId(1L, 2L)).willReturn(Optional.empty());
 
@@ -170,7 +170,7 @@ class OrderServiceTest {
      */
     @Test
     @DisplayName("cancelOrder: payment.failed 이벤트 처리 시 주문 상태 CANCELLED로 변경")
-    void handlePaymentFailed_주문취소() {
+    void cancelOrder_onPaymentFailed_changesStatusToCancelled() {
         // given
         Order order = Order.builder()
             .userId(1L)
@@ -198,7 +198,7 @@ class OrderServiceTest {
      */
     @Test
     @DisplayName("completeOrder: payment.completed 이벤트 처리 시 주문 상태 COMPLETED로 변경")
-    void handlePaymentCompleted_주문완료() {
+    void completeOrder_onPaymentCompleted_changesStatusToCompleted() {
         // given
         Order order = Order.builder()
             .userId(1L)
