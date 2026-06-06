@@ -8,10 +8,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
+import com.msa.common.exception.GlobalExceptionHandler;
 
 import java.util.NoSuchElementException;
 
@@ -28,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * {@link AuthController} HTTP 계층 슬라이스 테스트.
  */
 @WebMvcTest(AuthController.class)
+@Import(GlobalExceptionHandler.class)
 class AuthControllerTest {
 
     /** MockMvc HTTP 요청 수행 객체. */

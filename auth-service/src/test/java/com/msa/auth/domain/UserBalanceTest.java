@@ -31,7 +31,7 @@ class UserBalanceTest {
         UserBalance balance = UserBalance.builder().balance(90_000_000L).build();
         assertThatThrownBy(() -> balance.charge(10_000_001L))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("상한");
+                .hasMessageContaining("초과할 수 없습니다");
     }
 
     /**
