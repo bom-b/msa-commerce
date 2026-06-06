@@ -6,8 +6,6 @@
 <type>(<scope>): <subject>
 
 <body>
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 ```
 
 ## type
