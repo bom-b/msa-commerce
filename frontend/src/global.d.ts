@@ -3,6 +3,9 @@ declare module '*.module.scss' {
     export default classes;
 }
 
+declare module '*.scss';
+declare module '*.css';
+
 declare module '*.svg?react' {
     import { FC, SVGProps } from 'react';
 
