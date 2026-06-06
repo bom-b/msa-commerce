@@ -1,0 +1,67 @@
+# 변경된 서비스 감지 로직 (CI/CD 공용 재사용 워크플로우)
+# workflow_call 로 ci.yml, cd.yml 에서 호출한다. paths-filter 는 호출한 이벤트
+name: Detect Changes
+
+on:
+  workflow_call:
+    outputs:
+      backend:
+        description: "빌드 대상 백엔드 서비스 JSON 배열"
+        value: ${{ jobs.changes.outputs.backend }}
+      any_backend:
+        description: "백엔드 변경 여부"
+        value: ${{ jobs.changes.outputs.any_backend }}
+      frontend:
+        description: "프론트엔드 변경 여부"
+        value: ${{ jobs.changes.outputs.frontend }}
+      deploy:
+        description: "재배포 필요 여부 (백엔드/프론트/인프라 변경 시 true)"
+        value: ${{ jobs.changes.outputs.deploy }}
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.set.outputs.backend }}
+      any_backend: ${{ steps.set.outputs.any_backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      deploy: ${{ steps.set.outputs.deploy }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            common: ['common-module/**']
+            api_gateway: ['api-gateway/**']
+            auth_service: ['auth-service/**']
+            order_service: ['order-service/**']
+            payment_service: ['payment-service/**']
+            stock_service: ['stock-service/**']
+            frontend: ['frontend/**']
+            infra: ['docker-compose.yml', 'nginx/**', 'infra/**']
+      - id: set
+        # common-module 변경 시 이를 사용하는 모든 백엔드 서비스를 빌드 대상에 포함한다.
+        run: |
+          common='${{ steps.filter.outputs.common }}'
+          declare -A changed=(
+            [api-gateway]='${{ steps.filter.outputs.api_gateway }}'
+            [auth-service]='${{ steps.filter.outputs.auth_service }}'
+            [order-service]='${{ steps.filter.outputs.order_service }}'
+            [payment-service]='${{ steps.filter.outputs.payment_service }}'
+            [stock-service]='${{ steps.filter.outputs.stock_service }}'
+          )
+          list=()
+          for svc in api-gateway auth-service order-service payment-service stock-service; do
+            include="${changed[$svc]}"
+            if [ "$common" = "true" ] && [ "$svc" != "api-gateway" ]; then include="true"; fi
+            if [ "$include" = "true" ]; then list+=("$svc"); fi
+          done
+          json=$(printf '%s\n' "${list[@]}" | jq -R . | jq -cs 'map(select(length > 0))')
+          echo "backend=$json" >> "$GITHUB_OUTPUT"
+          if [ "${#list[@]}" -gt 0 ]; then echo "any_backend=true" >> "$GITHUB_OUTPUT"; else echo "any_backend=false" >> "$GITHUB_OUTPUT"; fi
+          if [ "${#list[@]}" -gt 0 ] || [ '${{ steps.filter.outputs.frontend }}' = "true" ] || [ '${{ steps.filter.outputs.infra }}' = "true" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          fi
