@@ -1,10 +1,12 @@
 # main push 시 변경된 서비스 이미지를 GHCR 에 빌드/푸시하고 서버에 Podman 으로 배포한다.
 # 이미지 빌드/푸시는 buildah + podman(=운영 런타임과 동일)으로 수행한다.
+# workflow_dispatch 로 수동 실행 시에는 변경 감지와 무관하게 현재 GHCR 이미지로 재배포한다.
 name: CD
 
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -77,12 +79,12 @@ jobs:
           tags: ${{ steps.build.outputs.tags }}
           registry: ghcr.io/${{ steps.vars.outputs.repo }}
 
-  # 서버 배포 (Podman). 빌드 잡이 실패하지 않았고 배포 대상 변경이 있을 때만 수행.
+  # 서버 배포 (Podman). 빌드 잡이 실패하지 않았고, 배포 대상 변경이 있거나 수동 실행일 때 수행.
   deploy:
     needs: [ changes, build-push-backend, build-push-frontend ]
     if: >
       always()
-      && needs.changes.outputs.deploy == 'true'
+      && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.deploy == 'true')
       && needs.build-push-backend.result != 'failure'
       && needs.build-push-frontend.result != 'failure'
       && needs.build-push-backend.result != 'cancelled'
